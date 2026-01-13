@@ -1,4 +1,4 @@
-import { Plus, LogOut } from 'lucide-react';
+import { Plus, LogOut, LogIn } from 'lucide-react';
 import type { User } from '../../types';
 import { signOutUser } from '../../services/supabase';
 
@@ -11,10 +11,18 @@ export default function Header({ user, onNewContent }: HeaderProps) {
   const handleSignOut = async () => {
     try {
       await signOutUser();
+      // 清除本地模式标记，下次打开时可以重新选择
+      localStorage.removeItem('qa_sider_use_local_mode');
       window.location.reload();
     } catch (error) {
       console.error('登出失败:', error);
     }
+  };
+
+  const handleSwitchToLogin = () => {
+    // 清除本地模式标记，重新加载以显示登录页
+    localStorage.removeItem('qa_sider_use_local_mode');
+    window.location.reload();
   };
 
   return (
@@ -63,13 +71,22 @@ export default function Header({ user, onNewContent }: HeaderProps) {
             </div>
           )}
         </div>
-        {user && (
+        {user ? (
           <button
             onClick={handleSignOut}
             className="text-gray-500 hover:text-gray-700 p-2 rounded-lg transition-colors"
             title="登出"
           >
             <LogOut size={18} />
+          </button>
+        ) : (
+          <button
+            onClick={handleSwitchToLogin}
+            className="flex items-center gap-1 px-3 py-1.5 text-sm text-primary hover:bg-indigo-50 rounded-lg transition-colors"
+            title="切换到登录模式"
+          >
+            <LogIn size={16} />
+            <span>登录</span>
           </button>
         )}
       </div>

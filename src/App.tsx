@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from './components/Header/Header';
 import SearchBar from './components/SearchBar/SearchBar';
 import FilterTabs from './components/FilterTabs/FilterTabs';
@@ -7,6 +7,7 @@ import EditorModal from './components/Editor/EditorModal';
 import AuthPanel from './components/Auth/AuthPanel';
 import { useAuth } from './hooks/useAuth';
 import { useContents } from './hooks/useContents';
+import { getFromLocalStorage } from './services/storage';
 import type { ContentType } from './types';
 
 function App() {
@@ -15,12 +16,55 @@ function App() {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editingContent, setEditingContent] = useState<string | null>(null);
   const [useLocalMode, setUseLocalMode] = useState(false);
+  const [showAuthPanel, setShowAuthPanel] = useState(false);
   
   const { user, loading: authLoading } = useAuth();
   // 使用本地模式时传入 undefined，使用 Supabase 时传入用户 ID
   const { contents, loading: contentsLoading, deleteContent, refresh } = useContents(
     useLocalMode ? undefined : user?.uid
   );
+
+  // 初始化：检查是否应该自动进入本地模式
+  useEffect(() => {
+    const initializeMode = async () => {
+      // 如果用户已登录，不需要检查本地模式
+      if (user) {
+        setUseLocalMode(false);
+        setShowAuthPanel(false);
+        return;
+      }
+
+      // 检查是否之前选择了本地模式
+      const savedMode = localStorage.getItem('qa_sider_use_local_mode');
+      if (savedMode === 'true') {
+        setUseLocalMode(true);
+        setShowAuthPanel(false);
+        return;
+      }
+
+      // 检查本地存储是否有数据
+      try {
+        const localData = await getFromLocalStorage();
+        if (localData && localData.length > 0) {
+          // 有本地数据，自动进入本地模式
+          setUseLocalMode(true);
+          setShowAuthPanel(false);
+          // 保存选择
+          localStorage.setItem('qa_sider_use_local_mode', 'true');
+        } else {
+          // 没有数据，显示登录选择页
+          setShowAuthPanel(true);
+        }
+      } catch (error) {
+        console.error('检查本地数据失败:', error);
+        setShowAuthPanel(true);
+      }
+    };
+
+    if (!authLoading) {
+      initializeMode();
+    }
+  }, [user, authLoading]);
 
   // 过滤内容
   const filteredContents = contents.filter((item) => {
@@ -68,6 +112,9 @@ function App() {
 
   const handleSkipLogin = () => {
     setUseLocalMode(true);
+    setShowAuthPanel(false);
+    // 保存用户选择，下次自动进入本地模式
+    localStorage.setItem('qa_sider_use_local_mode', 'true');
   };
 
   if (authLoading) {
@@ -78,7 +125,8 @@ function App() {
     );
   }
 
-  if (!user && !useLocalMode) {
+  // 显示登录选择页（仅在没有用户、没有本地模式、且应该显示的情况下）
+  if (!user && !useLocalMode && showAuthPanel) {
     return (
       <div className="h-screen flex items-center justify-center bg-gray-50">
         <AuthPanel onSkipLogin={handleSkipLogin} />
