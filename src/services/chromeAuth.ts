@@ -21,7 +21,7 @@ export const signInWithChromeIdentity = async (): Promise<void> => {
     const redirectUrl = chrome.identity.getRedirectURL();
     console.log('🔗 Redirect URL:', redirectUrl);
 
-    // 1. 获取 Supabase OAuth URL
+    // 1. 获取 Supabase OAuth URL (使用 PKCE)
     console.log('📡 [步骤 2/5] 从 Supabase 获取 OAuth URL...');
     
     const { data: authData, error: authError } = await supabase.auth.signInWithOAuth({
@@ -29,6 +29,10 @@ export const signInWithChromeIdentity = async (): Promise<void> => {
       options: {
         skipBrowserRedirect: true,
         redirectTo: redirectUrl,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
       },
     });
 

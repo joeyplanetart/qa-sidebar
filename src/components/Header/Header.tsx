@@ -31,7 +31,13 @@ export default function Header({ user, onNewContent, showAlert }: HeaderProps) {
     } catch (error) {
       console.error('🔵 Header: 登录失败', error);
       if (showAlert) {
-        const errorMessage = error instanceof Error ? error.message : '登录失败，请重试';
+        let errorMessage = error instanceof Error ? error.message : '登录失败，请重试';
+        
+        // 如果是 Authorization page could not be loaded 错误
+        if (errorMessage.includes('Authorization page could not be loaded')) {
+          errorMessage = 'OAuth 认证页面无法加载。\n\n可能原因：\n1. Google OAuth 配置需要时间生效（等待5-10分钟）\n2. 网络问题\n\n建议：稍后重试或使用本地存储模式';
+        }
+        
         await showAlert(errorMessage, '登录错误');
       }
     }
