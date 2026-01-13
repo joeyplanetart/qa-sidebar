@@ -70,22 +70,24 @@ function App() {
     }
   }, [user, authLoading]);
 
-  // 过滤内容
-  const filteredContents = contents.filter((item) => {
-    // 类型过滤
-    if (activeFilter !== 'all' && item.type !== activeFilter) {
-      return false;
-    }
-    // 搜索过滤
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      return (
-        item.title.toLowerCase().includes(query) ||
-        item.content.toLowerCase().includes(query)
-      );
-    }
-    return true;
-  });
+  // 过滤并排序内容（最新的在前面）
+  const filteredContents = contents
+    .filter((item) => {
+      // 类型过滤
+      if (activeFilter !== 'all' && item.type !== activeFilter) {
+        return false;
+      }
+      // 搜索过滤
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        return (
+          item.title.toLowerCase().includes(query) ||
+          item.content.toLowerCase().includes(query)
+        );
+      }
+      return true;
+    })
+    .sort((a, b) => b.createdAt - a.createdAt); // 按创建时间降序排序
 
   const handleNewContent = () => {
     setEditingContent(null);
