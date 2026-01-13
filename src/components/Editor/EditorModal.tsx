@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import Editor from '@monaco-editor/react';
 import type { ContentType, ContentItem } from '../../types';
 import { getContentById, createContent, updateContent } from '../../services/supabase';
 import { getFromLocalStorage, saveToLocalStorage } from '../../services/storage';
@@ -36,20 +35,12 @@ export default function EditorModal({ contentId, userId, onClose }: EditorModalP
   const [language, setLanguage] = useState('javascript');
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(!!contentId);
-  const [editorMounted, setEditorMounted] = useState(false);
-  const [editorError, setEditorError] = useState(false);
 
   useEffect(() => {
     if (contentId) {
       loadContent();
     }
   }, [contentId]);
-
-  // 重置编辑器加载状态当类型改变时
-  useEffect(() => {
-    setEditorMounted(false);
-    setEditorError(false);
-  }, [type]);
 
   const loadContent = async () => {
     if (!contentId) return;
@@ -160,6 +151,22 @@ export default function EditorModal({ contentId, userId, onClose }: EditorModalP
     }
   };
 
+  // 处理 Tab 键缩进
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const target = e.target as HTMLTextAreaElement;
+      const start = target.selectionStart;
+      const end = target.selectionEnd;
+      const newContent = content.substring(0, start) + '  ' + content.substring(end);
+      setContent(newContent);
+      // 设置光标位置
+      setTimeout(() => {
+        target.selectionStart = target.selectionEnd = start + 2;
+      }, 0);
+    }
+  };
+
   if (initialLoading) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -246,55 +253,20 @@ export default function EditorModal({ contentId, userId, onClose }: EditorModalP
             <label className="block text-sm font-medium text-gray-700 mb-2">
               内容
             </label>
-            <div className="relative border border-gray-300 rounded-lg overflow-hidden">
-              {type === 'text' || editorError ? (
-                <textarea
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder={type === 'text' ? '请输入文本内容' : '请输入代码内容'}
-                  className="w-full h-96 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary resize-none font-mono"
-                />
-              ) : (
-                <div className="relative">
-                  {!editorMounted && (
-                    <div className="w-full h-96 flex flex-col items-center justify-center bg-gray-50">
-                      <div className="text-gray-500 mb-4">编辑器加载中...</div>
-                      <button
-                        onClick={() => setEditorError(true)}
-                        className="text-sm text-blue-600 hover:text-blue-800 underline"
-                      >
-                        加载时间过长？点击切换到简单编辑器
-                      </button>
-                    </div>
-                  )}
-                  <div style={{ display: editorMounted ? 'block' : 'none' }}>
-                    <Editor
-                      height="400px"
-                      language={language}
-                      value={content}
-                      onChange={(value) => setContent(value || '')}
-                      theme="vs-dark"
-                      onMount={() => {
-                        setEditorMounted(true);
-                        setEditorError(false);
-                      }}
-                      options={{
-                        minimap: { enabled: false },
-                        fontSize: 14,
-                        lineNumbers: 'on',
-                        scrollBeyondLastLine: false,
-                        wordWrap: 'on',
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-            {editorError && (
-              <p className="text-xs text-gray-500 mt-1">
-                💡 代码编辑器加载失败，已切换到文本模式
-              </p>
-            )}
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={type === 'text' ? '请输入文本内容' : '请输入代码内容'}
+              className="w-full h-96 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none font-mono text-sm"
+              style={{
+                tabSize: 2,
+                lineHeight: '1.5',
+              }}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              💡 提示：按 Tab 键插入缩进
+            </p>
           </div>
         </div>
 
