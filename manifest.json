@@ -12,15 +12,9 @@
   "host_permissions": [
     "https://*.supabase.co/*",
     "https://*.googleapis.com/*",
-    "https://accounts.google.com/*"
+    "https://accounts.google.com/*",
+    "https://*.chromiumapp.org/*"
   ],
-  "oauth2": {
-    "client_id": "607376406112-2bj86a3tsl0saa7kbrdho602j2s36abi.apps.googleusercontent.com",
-    "scopes": [
-      "https://www.googleapis.com/auth/userinfo.email",
-      "https://www.googleapis.com/auth/userinfo.profile"
-    ]
-  },
   "side_panel": {
     "default_path": "index.html"
   },
