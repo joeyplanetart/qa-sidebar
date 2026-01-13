@@ -12,11 +12,28 @@ export default function AuthPanel({ onSkipLogin, showAlert }: AuthPanelProps) {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
+      console.log('用户点击了登录按钮');
       await signInWithChromeIdentity();
+      console.log('signInWithChromeIdentity 执行完成');
       // 登录成功后，useAuth hook 会自动检测到认证状态变化
     } catch (error) {
-      console.error('登录失败:', error);
-      const errorMessage = error instanceof Error ? error.message : '登录失败，请重试';
+      console.error('❌ 登录失败:', error);
+      
+      let errorMessage = '登录失败，请重试';
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        
+        // 提供更友好的错误提示
+        if (errorMessage.includes('Supabase')) {
+          errorMessage += '\n\n💡 提示：请确保 Supabase 中已配置 Google OAuth';
+        } else if (errorMessage.includes('取消')) {
+          errorMessage = '您取消了登录';
+        } else if (errorMessage.includes('access token')) {
+          errorMessage += '\n\n💡 提示：请检查 Google OAuth 和 Supabase 的配置';
+        }
+      }
+      
       await showAlert(errorMessage, '登录错误');
     } finally {
       setLoading(false);
