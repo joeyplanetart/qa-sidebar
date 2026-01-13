@@ -50,16 +50,31 @@ export const signInWithChromeIdentity = async (): Promise<void> => {
     console.log('🔍 [调试] 原始 OAuth URL:', authData.url);
     
     // 修复 redirect_uri 参数
-    const oauthUrl = new URL(authData.url);
+    let oauthUrl: URL;
+    try {
+      oauthUrl = new URL(authData.url);
+    } catch (e) {
+      console.error('❌ 无法解析 OAuth URL:', e);
+      throw new Error('Supabase 返回的 OAuth URL 格式错误');
+    }
+    
     const redirectUriParam = oauthUrl.searchParams.get('redirect_uri');
     
     console.log('🔍 [调试] URL 中的 redirect_uri 参数:', redirectUriParam);
     console.log('🔍 [调试] 我们期望的 redirect_uri:', redirectUrl);
+    console.log('🔍 [调试] 所有 URL 参数:', Array.from(oauthUrl.searchParams.entries()));
     
     // 如果 redirect_uri 缺失或不匹配，手动添加/修正
     if (!redirectUriParam || redirectUriParam !== redirectUrl) {
       console.log('⚠️ redirect_uri 不正确，正在修复...');
+      
+      // 删除可能存在的错误参数
+      oauthUrl.searchParams.delete('redirect_uri');
+      
+      // 设置正确的 redirect_uri
       oauthUrl.searchParams.set('redirect_uri', redirectUrl);
+      
+      console.log('🔍 [调试] 设置后的所有参数:', Array.from(oauthUrl.searchParams.entries()));
       console.log('✅ 修复后的 OAuth URL:', oauthUrl.toString());
     }
     
