@@ -1,13 +1,14 @@
 import { Plus, LogOut, LogIn } from 'lucide-react';
 import type { User } from '../../types';
-import { signOutChromeIdentity } from '../../services/chromeAuth';
+import { signOutChromeIdentity, signInWithChromeIdentity } from '../../services/chromeAuth';
 
 interface HeaderProps {
   user: User | null;
   onNewContent: () => void;
+  showAlert?: (message: string, title?: string) => Promise<boolean>;
 }
 
-export default function Header({ user, onNewContent }: HeaderProps) {
+export default function Header({ user, onNewContent, showAlert }: HeaderProps) {
   const handleSignOut = async () => {
     try {
       await signOutChromeIdentity();
@@ -19,10 +20,21 @@ export default function Header({ user, onNewContent }: HeaderProps) {
     }
   };
 
-  const handleSwitchToLogin = () => {
-    // 清除本地模式标记，重新加载以显示登录页
-    localStorage.removeItem('qa_sider_use_local_mode');
-    window.location.reload();
+  const handleLogin = async () => {
+    console.log('🔵 Header: 用户点击登录按钮');
+    try {
+      console.log('🔵 Header: 开始执行登录流程');
+      await signInWithChromeIdentity();
+      console.log('🔵 Header: 登录流程完成');
+      // 清除本地模式标记
+      localStorage.removeItem('qa_sider_use_local_mode');
+    } catch (error) {
+      console.error('🔵 Header: 登录失败', error);
+      if (showAlert) {
+        const errorMessage = error instanceof Error ? error.message : '登录失败，请重试';
+        await showAlert(errorMessage, '登录错误');
+      }
+    }
   };
 
   return (
@@ -81,9 +93,9 @@ export default function Header({ user, onNewContent }: HeaderProps) {
           </button>
         ) : (
           <button
-            onClick={handleSwitchToLogin}
+            onClick={handleLogin}
             className="flex items-center gap-1 px-3 py-1.5 text-sm text-primary hover:bg-indigo-50 rounded-lg transition-colors"
-            title="切换到登录模式"
+            title="使用 Google 账号登录"
           >
             <LogIn size={16} />
             <span>登录</span>

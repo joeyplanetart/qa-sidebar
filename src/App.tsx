@@ -178,7 +178,7 @@ function App() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
-      <Header user={user} onNewContent={handleNewContent} />
+      <Header user={user} onNewContent={handleNewContent} showAlert={dialog.showAlert} />
       
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="p-4 space-y-4">
