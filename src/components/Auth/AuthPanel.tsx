@@ -1,4 +1,4 @@
-import { signInWithGoogle } from '../../services/supabase';
+import { signInWithChromeIdentity } from '../../services/chromeAuth';
 import { useState } from 'react';
 
 interface AuthPanelProps {
@@ -12,10 +12,12 @@ export default function AuthPanel({ onSkipLogin, showAlert }: AuthPanelProps) {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-      await signInWithGoogle();
+      await signInWithChromeIdentity();
+      // 登录成功后，useAuth hook 会自动检测到认证状态变化
     } catch (error) {
       console.error('登录失败:', error);
-      await showAlert('登录失败，请重试', '错误');
+      const errorMessage = error instanceof Error ? error.message : '登录失败，请重试';
+      await showAlert(errorMessage, '登录错误');
     } finally {
       setLoading(false);
     }

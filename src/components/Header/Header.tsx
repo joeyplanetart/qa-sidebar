@@ -1,6 +1,6 @@
 import { Plus, LogOut, LogIn } from 'lucide-react';
 import type { User } from '../../types';
-import { signOutUser } from '../../services/supabase';
+import { signOutChromeIdentity } from '../../services/chromeAuth';
 
 interface HeaderProps {
   user: User | null;
@@ -10,7 +10,7 @@ interface HeaderProps {
 export default function Header({ user, onNewContent }: HeaderProps) {
   const handleSignOut = async () => {
     try {
-      await signOutUser();
+      await signOutChromeIdentity();
       // 清除本地模式标记，下次打开时可以重新选择
       localStorage.removeItem('qa_sider_use_local_mode');
       window.location.reload();
