@@ -239,7 +239,14 @@ export default function EditorModal({ contentId, userId, onClose, onSave }: Edit
               </label>
               <select
                 value={type}
-                onChange={(e) => setType(e.target.value as ContentType)}
+                onChange={(e) => {
+                  const newType = e.target.value as ContentType;
+                  setType(newType);
+                  // 自动更新语言：SQL类型 → SQL语言，代码类型保持当前语言
+                  if (newType === 'sql') {
+                    setLanguage('sql');
+                  }
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 {contentTypes.map((t) => (
@@ -254,10 +261,22 @@ export default function EditorModal({ contentId, userId, onClose, onSave }: Edit
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   语言
+                  <span className="ml-1 text-xs text-gray-400">
+                    (SQL/纯文本会自动切换类型)
+                  </span>
                 </label>
                 <select
                   value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
+                  onChange={(e) => {
+                    const newLanguage = e.target.value;
+                    setLanguage(newLanguage);
+                    // 自动更新类型：SQL语言 → SQL类型，纯文本 → 文本类型
+                    if (newLanguage === 'sql') {
+                      setType('sql');
+                    } else if (newLanguage === 'plaintext') {
+                      setType('text');
+                    }
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   {languageOptions.map((lang) => (
