@@ -1,4 +1,4 @@
-import { FileText, Code, Database, Edit, Trash2 } from 'lucide-react';
+import { FileText, Code, Database, Edit, Trash2, Copy, Check } from 'lucide-react';
 import type { ContentItem } from '../../types';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
@@ -8,13 +8,14 @@ import 'prismjs/components/prism-python';
 import 'prismjs/components/prism-sql';
 import 'prismjs/components/prism-java';
 import 'prismjs/components/prism-css';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface ContentListProps {
   contents: ContentItem[];
   loading: boolean;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+  showAlert: (message: string, title?: string) => Promise<boolean>;
 }
 
 const typeIcons = {
@@ -41,10 +42,24 @@ const languageLabels: Record<string, string> = {
   plaintext: '纯文本',
 };
 
-export default function ContentList({ contents, loading, onEdit, onDelete }: ContentListProps) {
+export default function ContentList({ contents, loading, onEdit, onDelete, showAlert }: ContentListProps) {
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
   useEffect(() => {
     Prism.highlightAll();
   }, [contents]);
+
+  const handleCopy = async (item: ContentItem) => {
+    try {
+      await navigator.clipboard.writeText(item.content);
+      setCopiedId(item.id);
+      // 2秒后恢复图标
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (error) {
+      console.error('复制失败:', error);
+      await showAlert('复制失败，请重试', '错误');
+    }
+  };
 
   if (loading) {
     return (
@@ -90,6 +105,17 @@ export default function ContentList({ contents, loading, onEdit, onDelete }: Con
                 )}
               </div>
               <div className="flex items-center gap-1">
+                <button
+                  onClick={() => handleCopy(item)}
+                  className="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
+                  title="复制内容"
+                >
+                  {copiedId === item.id ? (
+                    <Check size={16} className="text-green-600" />
+                  ) : (
+                    <Copy size={16} />
+                  )}
+                </button>
                 <button
                   onClick={() => onEdit(item.id)}
                   className="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 rounded transition-colors"

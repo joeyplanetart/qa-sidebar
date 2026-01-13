@@ -262,9 +262,6 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   语言
-                  <span className="ml-1 text-xs text-gray-400">
-                    (SQL/纯文本会自动切换类型)
-                  </span>
                 </label>
                 <select
                   value={language}

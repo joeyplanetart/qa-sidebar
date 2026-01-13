@@ -29,7 +29,7 @@ export default function Header({ user, onNewContent }: HeaderProps) {
     <header className="bg-white border-b border-gray-200 p-4">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-2xl font-bold text-primary">内容管理器</h1>
+          <h1 className="text-2xl font-bold text-primary"></h1>
           <p className="text-sm text-gray-500 mt-1">
             {user ? '保存并同步您的代码片段' : '本地模式：数据仅保存在浏览器'}
           </p>

@@ -166,6 +166,7 @@ function App() {
             loading={contentsLoading}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            showAlert={dialog.showAlert}
           />
         </div>
       </div>
