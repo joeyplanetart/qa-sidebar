@@ -21,7 +21,7 @@ export const signInWithChromeIdentity = async (): Promise<void> => {
     const redirectUrl = chrome.identity.getRedirectURL();
     console.log('🔗 Redirect URL:', redirectUrl);
 
-    // 1. 获取 Supabase OAuth URL (使用 PKCE)
+    // 1. 获取 Supabase OAuth URL
     console.log('📡 [步骤 2/5] 从 Supabase 获取 OAuth URL...');
     
     const { data: authData, error: authError } = await supabase.auth.signInWithOAuth({
@@ -47,18 +47,23 @@ export const signInWithChromeIdentity = async (): Promise<void> => {
     }
 
     console.log('✅ OAuth URL 获取成功');
-    console.log('🔍 [调试] 完整 OAuth URL:', authData.url);
+    console.log('🔍 [调试] 原始 OAuth URL:', authData.url);
     
-    // 检查 URL 中的 redirect_uri 参数
-    try {
-      const oauthUrl = new URL(authData.url);
-      const redirectUriParam = oauthUrl.searchParams.get('redirect_uri');
-      console.log('🔍 [调试] URL 中的 redirect_uri 参数:', redirectUriParam);
-      console.log('🔍 [调试] 我们期望的 redirect_uri:', redirectUrl);
-      console.log('🔍 [调试] 两者是否匹配:', redirectUriParam === redirectUrl);
-    } catch (e) {
-      console.error('解析 OAuth URL 失败:', e);
+    // 修复 redirect_uri 参数
+    const oauthUrl = new URL(authData.url);
+    const redirectUriParam = oauthUrl.searchParams.get('redirect_uri');
+    
+    console.log('🔍 [调试] URL 中的 redirect_uri 参数:', redirectUriParam);
+    console.log('🔍 [调试] 我们期望的 redirect_uri:', redirectUrl);
+    
+    // 如果 redirect_uri 缺失或不匹配，手动添加/修正
+    if (!redirectUriParam || redirectUriParam !== redirectUrl) {
+      console.log('⚠️ redirect_uri 不正确，正在修复...');
+      oauthUrl.searchParams.set('redirect_uri', redirectUrl);
+      console.log('✅ 修复后的 OAuth URL:', oauthUrl.toString());
     }
+    
+    const finalOAuthUrl = oauthUrl.toString();
 
     // 2. 使用 chrome.identity.launchWebAuthFlow 启动 OAuth 流程
     console.log('🌐 [步骤 3/5] 启动 OAuth 认证窗口...');
@@ -66,7 +71,7 @@ export const signInWithChromeIdentity = async (): Promise<void> => {
     const responseUrl = await new Promise<string>((resolve, reject) => {
       chrome.identity.launchWebAuthFlow(
         {
-          url: authData.url,
+          url: finalOAuthUrl,
           interactive: true,
         },
         (responseUrl) => {
