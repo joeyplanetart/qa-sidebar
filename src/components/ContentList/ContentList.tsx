@@ -23,6 +23,24 @@ const typeIcons = {
   sql: Database,
 };
 
+const typeLabels = {
+  text: '文本',
+  code: '代码',
+  sql: 'SQL',
+};
+
+const languageLabels: Record<string, string> = {
+  javascript: 'JavaScript',
+  typescript: 'TypeScript',
+  python: 'Python',
+  java: 'Java',
+  sql: 'SQL',
+  html: 'HTML',
+  css: 'CSS',
+  json: 'JSON',
+  plaintext: '纯文本',
+};
+
 export default function ContentList({ contents, loading, onEdit, onDelete }: ContentListProps) {
   useEffect(() => {
     Prism.highlightAll();
@@ -59,9 +77,17 @@ export default function ContentList({ contents, loading, onEdit, onDelete }: Con
             className="bg-white rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow"
           >
             <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-1">
                 <Icon size={18} className="text-primary" />
                 <h3 className="font-semibold text-gray-900">{item.title}</h3>
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800">
+                  {typeLabels[item.type]}
+                </span>
+                {item.language && item.type !== 'text' && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                    {languageLabels[item.language] || item.language}
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-1">
                 <button
