@@ -83,6 +83,22 @@ function App() {
     return true;
   });
 
+  // 调试日志：显示当前内容和过滤结果
+  useEffect(() => {
+    console.log('=== 内容调试信息 ===');
+    console.log('所有内容数量:', contents.length);
+    console.log('当前过滤器:', activeFilter);
+    console.log('所有内容类型统计:', contents.reduce((acc, item) => {
+      acc[item.type] = (acc[item.type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>));
+    console.log('过滤后内容数量:', filteredContents.length);
+    console.log('所有内容详情:', contents.map(item => ({ 
+      title: item.title, 
+      type: item.type 
+    })));
+  }, [contents, activeFilter, filteredContents.length]);
+
   const handleNewContent = () => {
     setEditingContent(null);
     setIsEditorOpen(true);
