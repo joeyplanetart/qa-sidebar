@@ -1,5 +1,16 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import Editor from 'react-simple-code-editor';
+import { highlight, languages } from 'prismjs';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-typescript';
+import 'prismjs/components/prism-python';
+import 'prismjs/components/prism-java';
+import 'prismjs/components/prism-sql';
+import 'prismjs/components/prism-markup';
+import 'prismjs/components/prism-css';
+import 'prismjs/components/prism-json';
+import 'prismjs/themes/prism-tomorrow.css';
 import type { ContentType, ContentItem } from '../../types';
 import { getContentById, createContent, updateContent } from '../../services/supabase';
 import { getFromLocalStorage, saveToLocalStorage } from '../../services/storage';
@@ -151,19 +162,28 @@ export default function EditorModal({ contentId, userId, onClose }: EditorModalP
     }
   };
 
-  // 处理 Tab 键缩进
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      const target = e.target as HTMLTextAreaElement;
-      const start = target.selectionStart;
-      const end = target.selectionEnd;
-      const newContent = content.substring(0, start) + '  ' + content.substring(end);
-      setContent(newContent);
-      // 设置光标位置
-      setTimeout(() => {
-        target.selectionStart = target.selectionEnd = start + 2;
-      }, 0);
+  // 根据语言类型获取 Prism 语言对象
+  const getPrismLanguage = (lang: string) => {
+    const languageMap: Record<string, any> = {
+      javascript: languages.javascript,
+      typescript: languages.typescript,
+      python: languages.python,
+      java: languages.java,
+      sql: languages.sql,
+      html: languages.markup,
+      css: languages.css,
+      json: languages.json,
+      plaintext: languages.plaintext,
+    };
+    return languageMap[lang] || languages.plaintext;
+  };
+
+  // 代码高亮函数
+  const highlightCode = (code: string) => {
+    try {
+      return highlight(code, getPrismLanguage(language), language);
+    } catch (e) {
+      return code;
     }
   };
 
@@ -252,20 +272,47 @@ export default function EditorModal({ contentId, userId, onClose }: EditorModalP
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               内容
+              {type !== 'text' && (
+                <span className="ml-2 text-xs text-gray-500">
+                  ({languageOptions.find(l => l.value === language)?.label})
+                </span>
+              )}
             </label>
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={type === 'text' ? '请输入文本内容' : '请输入代码内容'}
-              className="w-full h-96 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none font-mono text-sm"
-              style={{
-                tabSize: 2,
-                lineHeight: '1.5',
-              }}
-            />
+            {type === 'text' ? (
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="请输入文本内容"
+                className="w-full h-96 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none font-mono text-sm"
+                style={{
+                  tabSize: 2,
+                  lineHeight: '1.6',
+                }}
+              />
+            ) : (
+              <div className="border border-gray-300 rounded-lg overflow-hidden">
+                <Editor
+                  value={content}
+                  onValueChange={setContent}
+                  highlight={highlightCode}
+                  padding={12}
+                  placeholder="请输入代码内容..."
+                  style={{
+                    fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
+                    fontSize: 14,
+                    lineHeight: 1.6,
+                    minHeight: '384px',
+                    maxHeight: '384px',
+                    overflowY: 'auto',
+                    backgroundColor: '#2d2d2d',
+                    color: '#ccc',
+                  }}
+                  textareaClassName="focus:outline-none"
+                />
+              </div>
+            )}
             <p className="text-xs text-gray-500 mt-1">
-              💡 提示：按 Tab 键插入缩进
+              💡 提示：按 Tab 键插入缩进，支持语法高亮
             </p>
           </div>
         </div>
