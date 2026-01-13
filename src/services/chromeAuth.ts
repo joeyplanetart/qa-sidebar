@@ -58,13 +58,20 @@ export const signInWithChromeIdentity = async (): Promise<void> => {
           interactive: true,
         },
         (responseUrl) => {
+          console.log('🔍 [调试] 回调触发');
+          console.log('🔍 [调试] responseUrl 类型:', typeof responseUrl);
+          console.log('🔍 [调试] responseUrl 值:', responseUrl);
+          console.log('🔍 [调试] lastError:', chrome.runtime.lastError);
+          
           if (chrome.runtime.lastError) {
             console.error('❌ launchWebAuthFlow 错误:', chrome.runtime.lastError);
+            console.error('❌ 错误消息:', chrome.runtime.lastError.message);
             reject(new Error(`OAuth 流程失败: ${chrome.runtime.lastError.message}`));
           } else if (responseUrl) {
-            console.log('✅ 收到重定向 URL:', responseUrl.substring(0, 100) + '...');
+            console.log('✅ 收到完整重定向 URL:', responseUrl);
             resolve(responseUrl);
           } else {
+            console.error('❌ 未收到 responseUrl，也没有 lastError');
             reject(new Error('未收到重定向 URL。用户可能取消了登录。'));
           }
         }
