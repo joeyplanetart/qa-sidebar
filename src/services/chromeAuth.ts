@@ -46,7 +46,19 @@ export const signInWithChromeIdentity = async (): Promise<void> => {
       throw new Error('无法获取认证 URL。请检查 Supabase 配置。');
     }
 
-    console.log('✅ OAuth URL 获取成功:', authData.url);
+    console.log('✅ OAuth URL 获取成功');
+    console.log('🔍 [调试] 完整 OAuth URL:', authData.url);
+    
+    // 检查 URL 中的 redirect_uri 参数
+    try {
+      const oauthUrl = new URL(authData.url);
+      const redirectUriParam = oauthUrl.searchParams.get('redirect_uri');
+      console.log('🔍 [调试] URL 中的 redirect_uri 参数:', redirectUriParam);
+      console.log('🔍 [调试] 我们期望的 redirect_uri:', redirectUrl);
+      console.log('🔍 [调试] 两者是否匹配:', redirectUriParam === redirectUrl);
+    } catch (e) {
+      console.error('解析 OAuth URL 失败:', e);
+    }
 
     // 2. 使用 chrome.identity.launchWebAuthFlow 启动 OAuth 流程
     console.log('🌐 [步骤 3/5] 启动 OAuth 认证窗口...');
