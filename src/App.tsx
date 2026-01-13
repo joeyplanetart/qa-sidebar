@@ -12,6 +12,12 @@ import { useDialog } from './hooks/useDialog';
 import { getFromLocalStorage } from './services/storage';
 import type { ContentType } from './types';
 
+// 启动日志 - 帮助确认代码已加载
+console.log('🎯 QA sidePanel 应用已加载');
+console.log('📍 当前位置:', location.href);
+console.log('🔧 Chrome API 可用:', typeof chrome !== 'undefined');
+console.log('🔑 Chrome Identity 可用:', typeof chrome?.identity !== 'undefined');
+
 function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<'all' | ContentType>('all');
