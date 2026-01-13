@@ -5,8 +5,10 @@ import FilterTabs from './components/FilterTabs/FilterTabs';
 import ContentList from './components/ContentList/ContentList';
 import EditorModal from './components/Editor/EditorModal';
 import AuthPanel from './components/Auth/AuthPanel';
+import Dialog from './components/Dialog/Dialog';
 import { useAuth } from './hooks/useAuth';
 import { useContents } from './hooks/useContents';
+import { useDialog } from './hooks/useDialog';
 import { getFromLocalStorage } from './services/storage';
 import type { ContentType } from './types';
 
@@ -17,6 +19,8 @@ function App() {
   const [editingContent, setEditingContent] = useState<string | null>(null);
   const [useLocalMode, setUseLocalMode] = useState(false);
   const [showAuthPanel, setShowAuthPanel] = useState(false);
+  
+  const dialog = useDialog();
   
   const { user, loading: authLoading } = useAuth();
   // 使用本地模式时传入 undefined，使用 Supabase 时传入用户 ID
@@ -94,7 +98,11 @@ function App() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('确定要删除这个内容吗？')) {
+    const confirmed = await dialog.showConfirm(
+      '确定要删除这个内容吗？',
+      '删除确认'
+    );
+    if (confirmed) {
       await deleteContent(id);
     }
   };
@@ -129,7 +137,15 @@ function App() {
   if (!user && !useLocalMode && showAuthPanel) {
     return (
       <div className="h-screen flex items-center justify-center bg-gray-50">
-        <AuthPanel onSkipLogin={handleSkipLogin} />
+        <AuthPanel onSkipLogin={handleSkipLogin} showAlert={dialog.showAlert} />
+        <Dialog
+          isOpen={dialog.isOpen}
+          title={dialog.config.title}
+          message={dialog.config.message}
+          type={dialog.config.type}
+          onConfirm={dialog.handleConfirm}
+          onCancel={dialog.handleCancel}
+        />
       </div>
     );
   }
@@ -160,8 +176,18 @@ function App() {
           userId={useLocalMode ? undefined : user?.uid}
           onClose={handleCloseEditor}
           onSave={handleSaveSuccess}
+          showAlert={dialog.showAlert}
         />
       )}
+
+      <Dialog
+        isOpen={dialog.isOpen}
+        title={dialog.config.title}
+        message={dialog.config.message}
+        type={dialog.config.type}
+        onConfirm={dialog.handleConfirm}
+        onCancel={dialog.handleCancel}
+      />
     </div>
   );
 }

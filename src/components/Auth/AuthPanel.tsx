@@ -3,9 +3,10 @@ import { useState } from 'react';
 
 interface AuthPanelProps {
   onSkipLogin: () => void;
+  showAlert: (message: string, title?: string) => Promise<boolean>;
 }
 
-export default function AuthPanel({ onSkipLogin }: AuthPanelProps) {
+export default function AuthPanel({ onSkipLogin, showAlert }: AuthPanelProps) {
   const [loading, setLoading] = useState(false);
 
   const handleGoogleSignIn = async () => {
@@ -14,7 +15,7 @@ export default function AuthPanel({ onSkipLogin }: AuthPanelProps) {
       await signInWithGoogle();
     } catch (error) {
       console.error('登录失败:', error);
-      alert('登录失败，请重试');
+      await showAlert('登录失败，请重试', '错误');
     } finally {
       setLoading(false);
     }

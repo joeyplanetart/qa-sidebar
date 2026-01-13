@@ -20,6 +20,7 @@ interface EditorModalProps {
   userId: string | undefined;
   onClose: () => void;
   onSave: () => void;
+  showAlert: (message: string, title?: string) => Promise<boolean>;
 }
 
 const contentTypes: Array<{ value: ContentType; label: string }> = [
@@ -40,7 +41,7 @@ const languageOptions = [
   { value: 'plaintext', label: '纯文本' },
 ];
 
-export default function EditorModal({ contentId, userId, onClose, onSave }: EditorModalProps) {
+export default function EditorModal({ contentId, userId, onClose, onSave, showAlert }: EditorModalProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [type, setType] = useState<ContentType>('code');
@@ -80,7 +81,7 @@ export default function EditorModal({ contentId, userId, onClose, onSave }: Edit
       }
     } catch (error) {
       console.error('加载内容失败:', error);
-      alert('加载内容失败');
+      await showAlert('加载内容失败', '错误');
     } finally {
       setInitialLoading(false);
     }
@@ -88,11 +89,11 @@ export default function EditorModal({ contentId, userId, onClose, onSave }: Edit
 
   const handleSave = async () => {
     if (!title.trim()) {
-      alert('请输入标题');
+      await showAlert('请输入标题', '提示');
       return;
     }
     if (!content.trim()) {
-      alert('请输入内容');
+      await showAlert('请输入内容', '提示');
       return;
     }
 
@@ -158,7 +159,7 @@ export default function EditorModal({ contentId, userId, onClose, onSave }: Edit
       onSave();
     } catch (error) {
       console.error('保存失败:', error);
-      alert('保存失败，请重试');
+      await showAlert('保存失败，请重试', '错误');
     } finally {
       setLoading(false);
     }
