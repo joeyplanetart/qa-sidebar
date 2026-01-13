@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import Editor from '@monaco-editor/react';
-import type { ContentType } from '../../types';
+import type { ContentType, ContentItem } from '../../types';
 import { getContentById, createContent, updateContent } from '../../services/supabase';
+import { getFromLocalStorage, saveToLocalStorage } from '../../services/storage';
 
 interface EditorModalProps {
   contentId: string | null;
-  userId: string;
+  userId: string | undefined;
   onClose: () => void;
 }
 
@@ -46,12 +47,25 @@ export default function EditorModal({ contentId, userId, onClose }: EditorModalP
     if (!contentId) return;
     
     try {
-      const data = await getContentById(contentId);
-      if (data) {
-        setTitle(data.title);
-        setContent(data.content);
-        setType(data.type);
-        setLanguage(data.language || 'javascript');
+      if (userId) {
+        // 从 Supabase 加载
+        const data = await getContentById(contentId);
+        if (data) {
+          setTitle(data.title);
+          setContent(data.content);
+          setType(data.type);
+          setLanguage(data.language || 'javascript');
+        }
+      } else {
+        // 从本地存储加载
+        const localData = await getFromLocalStorage();
+        const item = localData.find((item) => item.id === contentId);
+        if (item) {
+          setTitle(item.title);
+          setContent(item.content);
+          setType(item.type);
+          setLanguage(item.language || 'javascript');
+        }
       }
     } catch (error) {
       console.error('加载内容失败:', error);
@@ -73,26 +87,61 @@ export default function EditorModal({ contentId, userId, onClose }: EditorModalP
 
     setLoading(true);
     try {
-      if (contentId) {
-        // 更新
-        await updateContent(contentId, {
-          title: title.trim(),
-          content: content.trim(),
-          type,
-          language: type === 'text' ? undefined : language,
-          updatedAt: Date.now(),
-        });
+      if (userId) {
+        // 保存到 Supabase
+        if (contentId) {
+          // 更新
+          await updateContent(contentId, {
+            title: title.trim(),
+            content: content.trim(),
+            type,
+            language: type === 'text' ? undefined : language,
+            updatedAt: Date.now(),
+          });
+        } else {
+          // 创建
+          await createContent({
+            userId,
+            title: title.trim(),
+            content: content.trim(),
+            type,
+            language: type === 'text' ? undefined : language,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          });
+        }
       } else {
-        // 创建
-        await createContent({
-          userId,
-          title: title.trim(),
-          content: content.trim(),
-          type,
-          language: type === 'text' ? undefined : language,
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-        });
+        // 保存到本地存储
+        const localData = await getFromLocalStorage();
+        if (contentId) {
+          // 更新
+          const updatedData = localData.map((item) =>
+            item.id === contentId
+              ? {
+                  ...item,
+                  title: title.trim(),
+                  content: content.trim(),
+                  type,
+                  language: type === 'text' ? undefined : language,
+                  updatedAt: Date.now(),
+                }
+              : item
+          );
+          await saveToLocalStorage(updatedData);
+        } else {
+          // 创建
+          const newItem: ContentItem = {
+            id: `local_${Date.now()}`,
+            userId: 'local',
+            title: title.trim(),
+            content: content.trim(),
+            type,
+            language: type === 'text' ? undefined : language,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          };
+          await saveToLocalStorage([...localData, newItem]);
+        }
       }
       onClose();
     } catch (error) {

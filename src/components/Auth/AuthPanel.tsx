@@ -1,7 +1,11 @@
 import { signInWithGoogle } from '../../services/supabase';
 import { useState } from 'react';
 
-export default function AuthPanel() {
+interface AuthPanelProps {
+  onSkipLogin: () => void;
+}
+
+export default function AuthPanel({ onSkipLogin }: AuthPanelProps) {
   const [loading, setLoading] = useState(false);
 
   const handleGoogleSignIn = async () => {
@@ -52,8 +56,17 @@ export default function AuthPanel() {
           </span>
         </button>
 
-        <div className="text-center text-sm text-gray-500">
+        <button
+          onClick={onSkipLogin}
+          disabled={loading}
+          className="w-full px-6 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span className="font-medium">稍后登录（使用本地存储）</span>
+        </button>
+
+        <div className="text-center text-sm text-gray-500 space-y-1">
           <p>登录后即可保存和同步您的内容</p>
+          <p className="text-xs">未登录时数据仅保存在本地浏览器</p>
         </div>
       </div>
     </div>

@@ -14,9 +14,13 @@ function App() {
   const [activeFilter, setActiveFilter] = useState<'all' | ContentType>('all');
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editingContent, setEditingContent] = useState<string | null>(null);
+  const [useLocalMode, setUseLocalMode] = useState(false);
   
   const { user, loading: authLoading } = useAuth();
-  const { contents, loading: contentsLoading, deleteContent } = useContents(user?.uid);
+  // 使用本地模式时传入 undefined，使用 Supabase 时传入用户 ID
+  const { contents, loading: contentsLoading, deleteContent } = useContents(
+    useLocalMode ? undefined : user?.uid
+  );
 
   // 过滤内容
   const filteredContents = contents.filter((item) => {
@@ -56,6 +60,10 @@ function App() {
     setEditingContent(null);
   };
 
+  const handleSkipLogin = () => {
+    setUseLocalMode(true);
+  };
+
   if (authLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -64,10 +72,10 @@ function App() {
     );
   }
 
-  if (!user) {
+  if (!user && !useLocalMode) {
     return (
       <div className="h-screen flex items-center justify-center bg-gray-50">
-        <AuthPanel />
+        <AuthPanel onSkipLogin={handleSkipLogin} />
       </div>
     );
   }
@@ -95,7 +103,7 @@ function App() {
       {isEditorOpen && (
         <EditorModal
           contentId={editingContent}
-          userId={user.uid}
+          userId={useLocalMode ? undefined : user?.uid}
           onClose={handleCloseEditor}
         />
       )}
