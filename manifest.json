@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "QA sidePanel",
+  "version": "1.0.0",
+  "description": "保存并管理您的代码片段、SQL语句和文本内容",
+  "permissions": [
+    "sidePanel",
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://*.supabase.co/*",
+    "https://*.googleapis.com/*"
+  ],
+  "side_panel": {
+    "default_path": "index.html"
+  },
+  "action": {
+    "default_title": "打开内容管理器"
+  },
+  "background": {
+    "service_worker": "src/background/service-worker.ts",
+    "type": "module"
+  },
+  "icons": {
+  }
+}
