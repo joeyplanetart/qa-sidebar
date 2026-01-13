@@ -18,7 +18,7 @@ function App() {
   
   const { user, loading: authLoading } = useAuth();
   // 使用本地模式时传入 undefined，使用 Supabase 时传入用户 ID
-  const { contents, loading: contentsLoading, deleteContent } = useContents(
+  const { contents, loading: contentsLoading, deleteContent, refresh } = useContents(
     useLocalMode ? undefined : user?.uid
   );
 
@@ -58,6 +58,12 @@ function App() {
   const handleCloseEditor = () => {
     setIsEditorOpen(false);
     setEditingContent(null);
+  };
+
+  const handleSaveSuccess = () => {
+    // 保存成功后刷新列表
+    refresh();
+    handleCloseEditor();
   };
 
   const handleSkipLogin = () => {
@@ -105,6 +111,7 @@ function App() {
           contentId={editingContent}
           userId={useLocalMode ? undefined : user?.uid}
           onClose={handleCloseEditor}
+          onSave={handleSaveSuccess}
         />
       )}
     </div>

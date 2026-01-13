@@ -19,6 +19,7 @@ interface EditorModalProps {
   contentId: string | null;
   userId: string | undefined;
   onClose: () => void;
+  onSave: () => void;
 }
 
 const contentTypes: Array<{ value: ContentType; label: string }> = [
@@ -39,7 +40,7 @@ const languageOptions = [
   { value: 'plaintext', label: '纯文本' },
 ];
 
-export default function EditorModal({ contentId, userId, onClose }: EditorModalProps) {
+export default function EditorModal({ contentId, userId, onClose, onSave }: EditorModalProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [type, setType] = useState<ContentType>('code');
@@ -153,7 +154,8 @@ export default function EditorModal({ contentId, userId, onClose }: EditorModalP
           await saveToLocalStorage([...localData, newItem]);
         }
       }
-      onClose();
+      // 保存成功，调用 onSave 回调来刷新列表并关闭编辑器
+      onSave();
     } catch (error) {
       console.error('保存失败:', error);
       alert('保存失败，请重试');
