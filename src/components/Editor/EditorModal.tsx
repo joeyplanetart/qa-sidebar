@@ -23,12 +23,6 @@ interface EditorModalProps {
   showAlert: (message: string, title?: string) => Promise<boolean>;
 }
 
-const contentTypes: Array<{ value: ContentType; label: string }> = [
-  { value: 'code', label: '代码' },
-  { value: 'sql', label: 'SQL' },
-  { value: 'text', label: '文本' },
-];
-
 const languageOptions = [
   { value: 'javascript', label: 'JavaScript' },
   { value: 'typescript', label: 'TypeScript' },
@@ -232,59 +226,36 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
             />
           </div>
 
-          {/* 类型选择 */}
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                类型
-              </label>
-              <select
-                value={type}
-                onChange={(e) => {
-                  const newType = e.target.value as ContentType;
-                  setType(newType);
-                  // 自动更新语言：SQL类型 → SQL语言，代码类型保持当前语言
-                  if (newType === 'sql') {
-                    setLanguage('sql');
-                  }
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                {contentTypes.map((t) => (
-                  <option key={t.value} value={t.value}>
-                    {t.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {type !== 'text' && (
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  语言
-                </label>
-                <select
-                  value={language}
-                  onChange={(e) => {
-                    const newLanguage = e.target.value;
-                    setLanguage(newLanguage);
-                    // 自动更新类型：SQL语言 → SQL类型，纯文本 → 文本类型
-                    if (newLanguage === 'sql') {
-                      setType('sql');
-                    } else if (newLanguage === 'plaintext') {
-                      setType('text');
-                    }
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  {languageOptions.map((lang) => (
-                    <option key={lang.value} value={lang.value}>
-                      {lang.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+          {/* 语言选择（自动推断类型） */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              语言
+              <span className="ml-2 text-xs text-gray-500">
+                (类型将自动设置)
+              </span>
+            </label>
+            <select
+              value={language}
+              onChange={(e) => {
+                const newLanguage = e.target.value;
+                setLanguage(newLanguage);
+                // 根据语言自动推断类型
+                if (newLanguage === 'sql') {
+                  setType('sql');
+                } else if (newLanguage === 'plaintext') {
+                  setType('text');
+                } else {
+                  setType('code');
+                }
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              {languageOptions.map((lang) => (
+                <option key={lang.value} value={lang.value}>
+                  {lang.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* 编辑器 */}
