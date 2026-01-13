@@ -36,12 +36,20 @@ export default function EditorModal({ contentId, userId, onClose }: EditorModalP
   const [language, setLanguage] = useState('javascript');
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(!!contentId);
+  const [editorMounted, setEditorMounted] = useState(false);
+  const [editorError, setEditorError] = useState(false);
 
   useEffect(() => {
     if (contentId) {
       loadContent();
     }
   }, [contentId]);
+
+  // 重置编辑器加载状态当类型改变时
+  useEffect(() => {
+    setEditorMounted(false);
+    setEditorError(false);
+  }, [type]);
 
   const loadContent = async () => {
     if (!contentId) return;
@@ -238,31 +246,55 @@ export default function EditorModal({ contentId, userId, onClose }: EditorModalP
             <label className="block text-sm font-medium text-gray-700 mb-2">
               内容
             </label>
-            <div className="border border-gray-300 rounded-lg overflow-hidden">
-              {type === 'text' ? (
+            <div className="relative border border-gray-300 rounded-lg overflow-hidden">
+              {type === 'text' || editorError ? (
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="请输入文本内容"
-                  className="w-full h-64 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                  placeholder={type === 'text' ? '请输入文本内容' : '请输入代码内容'}
+                  className="w-full h-96 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary resize-none font-mono"
                 />
               ) : (
-                <Editor
-                  height="400px"
-                  language={language}
-                  value={content}
-                  onChange={(value) => setContent(value || '')}
-                  theme="vs-dark"
-                  options={{
-                    minimap: { enabled: false },
-                    fontSize: 14,
-                    lineNumbers: 'on',
-                    scrollBeyondLastLine: false,
-                    wordWrap: 'on',
-                  }}
-                />
+                <div className="relative">
+                  {!editorMounted && (
+                    <div className="w-full h-96 flex flex-col items-center justify-center bg-gray-50">
+                      <div className="text-gray-500 mb-4">编辑器加载中...</div>
+                      <button
+                        onClick={() => setEditorError(true)}
+                        className="text-sm text-blue-600 hover:text-blue-800 underline"
+                      >
+                        加载时间过长？点击切换到简单编辑器
+                      </button>
+                    </div>
+                  )}
+                  <div style={{ display: editorMounted ? 'block' : 'none' }}>
+                    <Editor
+                      height="400px"
+                      language={language}
+                      value={content}
+                      onChange={(value) => setContent(value || '')}
+                      theme="vs-dark"
+                      onMount={() => {
+                        setEditorMounted(true);
+                        setEditorError(false);
+                      }}
+                      options={{
+                        minimap: { enabled: false },
+                        fontSize: 14,
+                        lineNumbers: 'on',
+                        scrollBeyondLastLine: false,
+                        wordWrap: 'on',
+                      }}
+                    />
+                  </div>
+                </div>
               )}
             </div>
+            {editorError && (
+              <p className="text-xs text-gray-500 mt-1">
+                💡 代码编辑器加载失败，已切换到文本模式
+              </p>
+            )}
           </div>
         </div>
 
