@@ -8,7 +8,8 @@ import 'prismjs/components/prism-python';
 import 'prismjs/components/prism-sql';
 import 'prismjs/components/prism-java';
 import 'prismjs/components/prism-css';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
+import { Virtuoso } from 'react-virtuoso';
 
 interface ContentListProps {
   contents: ContentItem[];
@@ -42,18 +43,108 @@ const languageLabels: Record<string, string> = {
   plaintext: '纯文本',
 };
 
+// 单个内容项组件（使用 memo 优化重渲染）
+const ContentItemRow = memo(
+  ({
+    item,
+    copiedId,
+    onCopy,
+    onEdit,
+    onDelete,
+  }: {
+    item: ContentItem;
+    copiedId: string | null;
+    onCopy: (item: ContentItem) => void;
+    onEdit: (id: string) => void;
+    onDelete: (id: string) => void;
+  }) => {
+    const Icon = typeIcons[item.type];
+    const previewContent = item.content.slice(0, 200);
+    const language = item.language || (item.type === 'sql' ? 'sql' : 'text');
+
+    useEffect(() => {
+      Prism.highlightAll();
+    }, [item.content]);
+
+    return (
+      <div className="bg-white rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <Icon size={18} className="text-primary" />
+              <h3 className="font-semibold text-gray-900">{item.title}</h3>
+            </div>
+            <div className="flex items-center gap-2 ml-6">
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800">
+                {typeLabels[item.type]}
+              </span>
+              {item.language && item.type !== 'text' && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                  {languageLabels[item.language] || item.language}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => onCopy(item)}
+              className="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
+              title="复制内容"
+            >
+              {copiedId === item.id ? (
+                <Check size={16} className="text-green-600" />
+              ) : (
+                <Copy size={16} />
+              )}
+            </button>
+            <button
+              onClick={() => onEdit(item.id)}
+              className="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 rounded transition-colors"
+              title="编辑"
+            >
+              <Edit size={16} />
+            </button>
+            <button
+              onClick={() => onDelete(item.id)}
+              className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+              title="删除"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        </div>
+
+        {item.type === 'text' ? (
+          <div className="text-sm text-gray-700 bg-gray-50 p-3 rounded">
+            {previewContent}
+            {item.content.length > 200 && '...'}
+          </div>
+        ) : (
+          <pre className="text-sm bg-gray-900 rounded overflow-x-auto">
+            <code className={`language-${language}`}>
+              {previewContent}
+              {item.content.length > 200 && '\n...'}
+            </code>
+          </pre>
+        )}
+
+        <div className="mt-3 text-xs text-gray-500">
+          创建于 {new Date(item.createdAt).toLocaleString('zh-CN')}
+        </div>
+      </div>
+    );
+  }
+);
+
+ContentItemRow.displayName = 'ContentItemRow';
+
 export default function ContentList({ contents, loading, onEdit, onDelete, showAlert }: ContentListProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
-
-  useEffect(() => {
-    Prism.highlightAll();
-  }, [contents]);
 
   const handleCopy = async (item: ContentItem) => {
     try {
       await navigator.clipboard.writeText(item.content);
       setCopiedId(item.id);
-      // 2秒后恢复图标
       setTimeout(() => setCopiedId(null), 2000);
     } catch (error) {
       console.error('复制失败:', error);
@@ -80,83 +171,22 @@ export default function ContentList({ contents, loading, onEdit, onDelete, showA
   }
 
   return (
-    <div className="space-y-3">
-      {contents.map((item) => {
-        const Icon = typeIcons[item.type];
-        const previewContent = item.content.slice(0, 200);
-        const language = item.language || (item.type === 'sql' ? 'sql' : 'text');
-
-        return (
-          <div
-            key={item.id}
-            className="bg-white rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <Icon size={18} className="text-primary" />
-                  <h3 className="font-semibold text-gray-900">{item.title}</h3>
-                </div>
-                <div className="flex items-center gap-2 ml-6">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800">
-                    {typeLabels[item.type]}
-                  </span>
-                  {item.language && item.type !== 'text' && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
-                      {languageLabels[item.language] || item.language}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => handleCopy(item)}
-                  className="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
-                  title="复制内容"
-                >
-                  {copiedId === item.id ? (
-                    <Check size={16} className="text-green-600" />
-                  ) : (
-                    <Copy size={16} />
-                  )}
-                </button>
-                <button
-                  onClick={() => onEdit(item.id)}
-                  className="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 rounded transition-colors"
-                  title="编辑"
-                >
-                  <Edit size={16} />
-                </button>
-                <button
-                  onClick={() => onDelete(item.id)}
-                  className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                  title="删除"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            </div>
-
-            {item.type === 'text' ? (
-              <div className="text-sm text-gray-700 bg-gray-50 p-3 rounded">
-                {previewContent}
-                {item.content.length > 200 && '...'}
-              </div>
-            ) : (
-              <pre className="text-sm bg-gray-900 rounded overflow-x-auto">
-                <code className={`language-${language}`}>
-                  {previewContent}
-                  {item.content.length > 200 && '\n...'}
-                </code>
-              </pre>
-            )}
-
-            <div className="mt-3 text-xs text-gray-500">
-              创建于 {new Date(item.createdAt).toLocaleString('zh-CN')}
-            </div>
+    <div style={{ height: 'calc(100vh - 280px)', width: '100%' }}>
+      <Virtuoso
+        data={contents}
+        overscan={200}
+        itemContent={(_index, item) => (
+          <div style={{ paddingBottom: '12px' }}>
+            <ContentItemRow
+              item={item}
+              copiedId={copiedId}
+              onCopy={handleCopy}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
           </div>
-        );
-      })}
+        )}
+      />
     </div>
   );
 }

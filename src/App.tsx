@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Header from './components/Header/Header';
 import SearchBar from './components/SearchBar/SearchBar';
 import FilterTabs from './components/FilterTabs/FilterTabs';
@@ -70,24 +70,42 @@ function App() {
     }
   }, [user, authLoading]);
 
-  // 过滤并排序内容（最新的在前面）
-  const filteredContents = contents
-    .filter((item) => {
-      // 类型过滤
-      if (activeFilter !== 'all' && item.type !== activeFilter) {
-        return false;
-      }
-      // 搜索过滤
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        return (
-          item.title.toLowerCase().includes(query) ||
-          item.content.toLowerCase().includes(query)
-        );
-      }
-      return true;
-    })
-    .sort((a, b) => b.createdAt - a.createdAt); // 按创建时间降序排序
+  // 创建搜索索引（缓存小写版本以优化性能）
+  const searchIndex = useMemo(() => {
+    return contents.map((item) => ({
+      id: item.id,
+      titleLower: item.title.toLowerCase(),
+      contentLower: item.content.toLowerCase(),
+    }));
+  }, [contents]);
+
+  // 过滤并排序内容（使用 useMemo 缓存结果）
+  const filteredContents = useMemo(() => {
+    let filtered = contents;
+
+    // 类型过滤
+    if (activeFilter !== 'all') {
+      filtered = filtered.filter((item) => item.type === activeFilter);
+    }
+
+    // 搜索过滤（使用索引优化）
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchingIds = new Set(
+        searchIndex
+          .filter(
+            (index) =>
+              index.titleLower.includes(query) ||
+              index.contentLower.includes(query)
+          )
+          .map((index) => index.id)
+      );
+      filtered = filtered.filter((item) => matchingIds.has(item.id));
+    }
+
+    // 排序（按创建时间降序）
+    return filtered.sort((a, b) => b.createdAt - a.createdAt);
+  }, [contents, activeFilter, searchQuery, searchIndex]);
 
   const handleNewContent = () => {
     setEditingContent(null);
