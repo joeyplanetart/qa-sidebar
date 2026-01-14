@@ -1,170 +1,197 @@
-# 内容管理器 - Chrome Extension
+# QA sidePanel - Chrome 扩展
 
-一个基于 Chrome Side Panel 的内容管理器，用于保存和管理代码片段、SQL 语句和文本内容。
+一个现代化的 Chrome 侧边栏扩展，用于保存和管理代码片段、SQL 语句和文本内容。支持云端同步、本地存储、置顶功能等。
 
-## 功能特性
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
 
-- ✨ 支持保存代码片段、SQL 语句和纯文本
-- 🎨 Monaco Editor 集成，提供专业的代码编辑体验
-- 🔍 实时模糊搜索功能
-- 🏷️ 类型分类筛选（全部/代码/SQL/文本）
-- 🔐 Google 账号登录，数据云端同步
-- 💾 支持匿名模式（本地存储）
-- 🎯 语法高亮显示
-- 📱 美观的现代化 UI
+## ✨ 主要功能
 
-## 技术栈
+- 📝 **多类型支持** - 保存代码片段、SQL 语句和纯文本
+- 🎨 **专业编辑器** - Monaco Editor 集成，提供 IDE 级编辑体验
+- 🔍 **智能搜索** - 实时模糊搜索，快速定位内容
+- 📌 **置顶功能** - 常用内容置顶，快速访问
+- 🏷️ **类型筛选** - 按类型分类（代码/SQL/文本）
+- 🔐 **Email 登录** - 简单的邮箱密码认证
+- ☁️ **云端同步** - Supabase 后端，数据自动同步
+- 💾 **本地模式** - 支持匿名使用，数据保存在本地
+- 🎯 **语法高亮** - Prism.js 驱动，支持多种语言
+- 📱 **现代化 UI** - TailwindCSS + 响应式设计
 
-- **前端**: React 18 + TypeScript + TailwindCSS
+## 🚀 快速开始
+
+### 安装
+
+```bash
+# 克隆仓库
+git clone <your-repo-url>
+cd qa_sider
+
+# 安装依赖
+npm install
+
+# 配置环境变量
+cp .env.example .env
+# 编辑 .env 文件，填入你的 Supabase 配置
+
+# 构建扩展
+npm run build
+```
+
+### 加载到 Chrome
+
+1. 打开 Chrome，访问 `chrome://extensions/`
+2. 开启右上角的 **开发者模式**
+3. 点击 **加载已解压的扩展程序**
+4. 选择项目的 `dist` 目录
+5. 点击扩展图标打开侧边栏
+
+## 📚 文档
+
+完整文档位于 [`docs/`](./docs/) 目录：
+
+- **[快速开始](./docs/setup/QUICKSTART.md)** - 快速上手指南
+- **[安装说明](./docs/setup/INSTALL.md)** - 详细安装步骤
+- **[功能介绍](./docs/features/)** - 各项功能的使用说明
+- **[开发指南](./docs/debugging/)** - 调试和测试
+- **[部署指南](./docs/deployment/)** - 生产环境部署
+
+### 主要文档链接
+
+#### 配置与安装
+- [Supabase 配置](./docs/setup/SUPABASE_SETUP.md)
+- [安装指南](./docs/setup/INSTALL.md)
+- [快速开始](./docs/setup/QUICKSTART.md)
+
+#### 功能说明
+- [Email 认证](./docs/features/EMAIL_AUTH_IMPLEMENTATION.md)
+- [置顶功能](./docs/features/PIN_FEATURE_IMPLEMENTATION.md)
+- [图标配置](./docs/features/ICON_SETUP.md)
+- [使用模式](./docs/features/USAGE_MODES.md)
+
+#### 调试与测试
+- [调试指南](./docs/debugging/HOW_TO_DEBUG.md)
+- [测试指南](./docs/debugging/TESTING_GUIDE.md)
+
+## 🛠️ 技术栈
+
+- **前端框架**: React 18 + TypeScript
 - **构建工具**: Vite + @crxjs/vite-plugin
+- **样式**: TailwindCSS
 - **编辑器**: Monaco Editor
 - **语法高亮**: Prism.js
-- **后端服务**: Supabase (Auth + PostgreSQL)
+- **后端**: Supabase (Auth + PostgreSQL)
 - **状态管理**: Zustand
 - **图标**: Lucide React
+- **虚拟列表**: React Virtuoso
 
-## 开发环境设置
+## 📦 项目结构
 
-### 1. 安装依赖
-
-\`\`\`bash
-npm install
-\`\`\`
-
-### 2. 配置 Firebase
-
-1. 在 [Firebase Console](https://console.firebase.google.com/) 创建新项目
-2. 启用 Google Authentication
-3. 创建 Firestore 数据库
-4. 复制 Firebase 配置信息
-5. 创建 `.env` 文件（参考 `.env.example`）：
-
-\`\`\`env
-VITE_FIREBASE_API_KEY=your-api-key
-VITE_FIREBASE_AUTH_DOMAIN=your-auth-domain
-VITE_FIREBASE_PROJECT_ID=your-project-id
-VITE_FIREBASE_STORAGE_BUCKET=your-storage-bucket
-VITE_FIREBASE_MESSAGING_SENDER_ID=your-messaging-sender-id
-VITE_FIREBASE_APP_ID=your-app-id
-\`\`\`
-
-### 3. 配置 Supabase 安全策略
-
-在 Supabase SQL Editor 中执行：
-
-\`\`\`sql
--- 启用 RLS
-ALTER TABLE contents ENABLE ROW LEVEL SECURITY;
-
--- 创建安全策略
-CREATE POLICY "Users can read own contents"
-ON contents FOR SELECT
-USING (auth.uid()::text = "userId");
-
-CREATE POLICY "Users can create own contents"
-ON contents FOR INSERT
-WITH CHECK (auth.uid()::text = "userId");
-
-CREATE POLICY "Users can update own contents"
-ON contents FOR UPDATE
-USING (auth.uid()::text = "userId");
-
-CREATE POLICY "Users can delete own contents"
-ON contents FOR DELETE
-USING (auth.uid()::text = "userId");
-\`\`\`
-
-### 4. 开发模式运行
-
-\`\`\`bash
-npm run dev
-\`\`\`
-
-### 5. 加载到 Chrome
-
-1. 打开 Chrome 浏览器，访问 `chrome://extensions/`
-2. 开启右上角的"开发者模式"
-3. 点击"加载已解压的扩展程序"
-4. 选择项目的 `dist` 目录
-
-### 6. 构建生产版本
-
-\`\`\`bash
-npm run build
-\`\`\`
-
-## 项目结构
-
-\`\`\`
+```
 qa_sider/
-├── manifest.json              # Chrome Extension 配置
-├── src/
-│   ├── App.tsx               # 主应用组件
-│   ├── main.tsx              # 应用入口
-│   ├── index.css             # 全局样式
-│   ├── background/           # Background Service Worker
-│   │   └── service-worker.ts
-│   ├── components/           # React 组件
-│   │   ├── Header/          # 头部组件
-│   │   ├── SearchBar/       # 搜索栏
-│   │   ├── FilterTabs/      # 分类筛选
-│   │   ├── ContentList/     # 内容列表
-│   │   ├── Editor/          # 编辑器对话框
-│   │   └── Auth/            # 登录组件
-│   ├── hooks/               # 自定义 Hooks
-│   │   ├── useAuth.ts       # 认证状态管理
-│   │   └── useContents.ts   # 内容数据管理
-│   ├── services/            # 服务层
-│   │   ├── firebase.ts      # Firebase 服务
-│   │   └── storage.ts       # Chrome Storage API
-│   └── types/               # TypeScript 类型定义
-│       └── index.ts
-├── public/                   # 静态资源
-└── vite.config.ts           # Vite 配置
-\`\`\`
+├── src/                      # 源代码
+│   ├── components/          # React 组件
+│   │   ├── Auth/           # 认证相关
+│   │   ├── ContentList/    # 内容列表
+│   │   ├── Editor/         # 编辑器
+│   │   ├── Header/         # 头部
+│   │   └── ...
+│   ├── hooks/              # 自定义 Hooks
+│   ├── services/           # 服务层 (Supabase, Storage)
+│   ├── types/              # TypeScript 类型
+│   └── utils/              # 工具函数
+├── public/                  # 静态资源
+│   └── icons/              # 扩展图标
+├── docs/                    # 📚 文档目录
+│   ├── features/           # 功能说明
+│   ├── setup/              # 配置安装
+│   ├── debugging/          # 调试测试
+│   ├── deployment/         # 部署相关
+│   └── troubleshooting/    # 故障排查
+├── manifest.json            # Chrome 扩展配置
+└── package.json            # 项目依赖
+```
 
-## 使用说明
+## 🎯 使用说明
 
-### 登录
+### 注册/登录
 
-1. 首次使用时，点击"使用 Google 账号登录"
-2. 登录后可以在所有设备间同步内容
+1. 首次使用时，点击 **"没有账号？点击注册"**
+2. 输入邮箱和密码（至少 6 位）
+3. 注册成功后自动登录（无需邮箱确认）
+4. 或点击 **"稍后登录"** 使用本地模式
 
 ### 创建内容
 
-1. 点击右上角的"新建"按钮
+1. 点击右上角 **"新建"** 按钮
 2. 输入标题
 3. 选择类型（代码/SQL/文本）
-4. 选择编程语言（代码和 SQL 类型）
-5. 在编辑器中输入内容
-6. 点击"保存"
+4. 选择编程语言（可选）
+5. 在 Monaco Editor 中编辑内容
+6. 点击 **"保存"**
+
+### 置顶常用内容
+
+1. 点击内容卡片右上角的 📌 图标
+2. 置顶的内容会自动排在列表最前面
+3. 再次点击可取消置顶
 
 ### 搜索和筛选
 
-- 使用搜索框进行实时模糊搜索
-- 点击分类标签（全部/代码/SQL/文本）进行筛选
+- 在搜索框输入关键词进行实时搜索
+- 点击分类标签筛选特定类型的内容
+- 搜索和筛选可以同时使用
 
-### 编辑和删除
+## 🔧 开发
 
-- 点击内容卡片上的编辑图标进行编辑
-- 点击删除图标删除内容（需确认）
+```bash
+# 开发模式（热重载）
+npm run dev
 
-## 注意事项
+# 构建生产版本
+npm run build
 
-1. **Firebase 配置**: 确保正确配置 Firebase 环境变量
-2. **Chrome 版本**: 需要 Chrome 114+ 版本（支持 Side Panel API）
-3. **权限**: 插件需要 `sidePanel`、`storage`、`activeTab` 权限
-4. **数据安全**: Firestore 安全规则确保用户只能访问自己的数据
+# 代码检查
+npm run lint
 
-## 开发计划
+# 类型检查
+tsc --noEmit
+```
 
-- [ ] 添加标签功能
-- [ ] 支持内容导出
-- [ ] 支持批量操作
-- [ ] 添加内容分享功能
-- [ ] 优化移动端体验
-- [ ] 添加快捷键支持
+## 📝 环境变量
 
-## License
+创建 `.env` 文件：
 
-MIT
+```env
+# Supabase 配置
+VITE_SUPABASE_URL=your-supabase-url
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+## 🐛 故障排除
+
+遇到问题？查看我们的故障排查文档：
+
+- [常见问题](./docs/troubleshooting/)
+- [OAuth 问题](./docs/troubleshooting/OAUTH_TROUBLESHOOTING.md)
+- [登录问题](./docs/troubleshooting/LOGIN_LOGIC.md)
+
+## 🤝 贡献
+
+欢迎贡献！请随时提交 Issue 或 Pull Request。
+
+## 📄 许可证
+
+MIT License - 详见 [LICENSE](./LICENSE) 文件
+
+## 🙏 致谢
+
+- [Supabase](https://supabase.com/) - 后端服务
+- [Monaco Editor](https://microsoft.github.io/monaco-editor/) - 代码编辑器
+- [Prism.js](https://prismjs.com/) - 语法高亮
+- [Lucide](https://lucide.dev/) - 图标库
+- [TailwindCSS](https://tailwindcss.com/) - CSS 框架
+
+---
+
+Made with ❤️ for developers who love to organize their snippets.
