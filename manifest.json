@@ -19,7 +19,7 @@
     "default_path": "index.html"
   },
   "action": {
-    "default_title": "打开内容管理器"
+    "default_title": "QA SidePanel"
   },
   "background": {
     "service_worker": "src/background/service-worker.ts",
