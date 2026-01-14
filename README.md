@@ -118,7 +118,7 @@ qa_sider/
 **快速保存片段**：
 - 在任何网页选中文本
 - 右键菜单选择"保存选中文本为片段"
-- 或使用快捷键 `Ctrl+Shift+S` (Mac: `Cmd+Shift+S`)
+- 或使用快捷键 `Alt+Shift+S` (Mac: `Cmd+Shift+D`)
 - 自动检测语言类型，添加标签后保存
 
 **快速插入片段**：
@@ -128,8 +128,10 @@ qa_sider/
 - 搜索并选择片段，按 Enter 插入
 
 **支持的快捷键**：
-- `Ctrl+Shift+S` / `Cmd+Shift+S` - 保存选中文本
+- `Alt+Shift+S` / `Cmd+Shift+D` - 保存选中文本
 - `Ctrl+Shift+V` / `Cmd+Shift+V` - 插入片段
+
+> 💡 提示：如果快捷键冲突，可以在 `chrome://extensions/shortcuts` 中自定义
 
 详细说明请查看 [快速插入功能文档](QUICK_INSERT_FEATURE.md)
 

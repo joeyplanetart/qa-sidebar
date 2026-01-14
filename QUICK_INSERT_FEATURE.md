@@ -14,7 +14,7 @@
 
 **使用方式**：
 - **右键菜单**：选中文本 → 右键 → "保存选中文本为片段"
-- **快捷键**：选中文本 → `Ctrl+Shift+S` (Mac: `Cmd+Shift+S`)
+- **快捷键**：选中文本 → `Alt+Shift+S` (Mac: `Cmd+Shift+D`)
 
 **功能特点**：
 - ✅ 自动检测语言类型（JavaScript、Python、SQL等）
@@ -56,7 +56,7 @@
 
 1. 在 GitHub/StackOverflow 等网站看到有用的代码
 2. 选中代码
-3. 右键 → "保存选中文本为片段" 或按 `Ctrl+Shift+S`
+3. 右键 → "保存选中文本为片段" 或按 `Alt+Shift+S`
 4. 输入标题，添加标签（如"Python", "API", "常用"）
 5. 点击保存
 
@@ -78,10 +78,12 @@
 
 | 快捷键 | Mac 快捷键 | 功能 |
 |--------|-----------|------|
-| `Ctrl+Shift+S` | `Cmd+Shift+S` | 保存选中文本为片段 |
+| `Alt+Shift+S` | `Cmd+Shift+D` | 保存选中文本为片段 |
 | `Ctrl+Shift+V` | `Cmd+Shift+V` | 插入片段到页面 |
 | `Enter` | `Enter` | 在选择器中插入选中的片段 |
 | `Esc` | `Esc` | 关闭对话框 |
+
+> **注意**：原来的 `Ctrl+Shift+S` 与 Chrome 保存页面快捷键冲突，已改为 `Alt+Shift+S`
 
 ## 🎨 UI 组件
 
@@ -301,10 +303,16 @@ Content Script 接收并插入到 DOM
 
 ### 问题 1：快捷键不工作
 
+**原因**：
+- `Ctrl+Shift+S` 与 Chrome 保存页面快捷键冲突
+- 已更改为 `Alt+Shift+S`（Windows/Linux）和 `Cmd+Shift+D`（Mac）
+
 **解决方案**：
-1. 检查 Chrome 扩展快捷键设置：`chrome://extensions/shortcuts`
-2. 确保快捷键没有被其他扩展占用
-3. 在某些特殊页面（如 Chrome 设置页），快捷键可能被禁用
+1. 更新到最新版本（使用新的快捷键）
+2. 或自定义快捷键：访问 `chrome://extensions/shortcuts`
+3. 找到 "QA sidePanel" - "保存选中文本为片段"
+4. 点击编辑图标，设置你喜欢的快捷键组合
+5. 建议使用 `Alt` 或 `Ctrl+Alt` 组合避免冲突
 
 ### 问题 2：无法插入到输入框
 

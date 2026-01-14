@@ -50,8 +50,8 @@
     },
     "save-selection": {
       "suggested_key": {
-        "default": "Ctrl+Shift+S",
-        "mac": "Command+Shift+S"
+        "default": "Alt+Shift+S",
+        "mac": "Command+Shift+D"
       },
       "description": "保存选中文本为片段"
     }

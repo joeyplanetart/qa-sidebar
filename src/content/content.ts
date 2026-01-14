@@ -167,8 +167,12 @@ function showNotification(message: string, type: 'success' | 'warning' | 'error'
 
 // 监听快捷键（作为备份，主要由 commands API 处理）
 document.addEventListener('keydown', (e) => {
-  // Ctrl+Shift+S 或 Cmd+Shift+S - 保存选中文本
-  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'S') {
+  // Alt+Shift+S (Windows/Linux) 或 Cmd+Shift+D (Mac) - 保存选中文本
+  const isSaveKey = 
+    (e.altKey && e.shiftKey && e.key === 'S' && !e.ctrlKey && !e.metaKey) || // Windows/Linux
+    (e.metaKey && e.shiftKey && e.key === 'D' && !e.altKey); // Mac
+  
+  if (isSaveKey) {
     e.preventDefault();
     const selectedText = window.getSelection()?.toString();
     if (selectedText) {
