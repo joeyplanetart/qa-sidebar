@@ -189,7 +189,8 @@ export function generateAvatar(
   `;
   
   // 转换为 data URL
-  return `data:image/svg+xml;base64,${btoa(svg)}`;
+  // 使用 encodeURIComponent 来支持中文和其他 Unicode 字符
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
 /**

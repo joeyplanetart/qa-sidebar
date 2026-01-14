@@ -171,6 +171,30 @@ const avatarUrl = getUserAvatar(
 
 所有现代浏览器都支持 SVG 和 data URL。
 
+## Bug 修复记录
+
+### 修复中文用户名编码问题
+**问题**: 当用户名包含中文或其他非 Latin1 字符时，`btoa()` 会抛出 `InvalidCharacterError` 错误，导致页面空白。
+
+**原因**: `btoa()` 只能编码 Latin1 字符（单字节字符），无法处理 UTF-8 多字节字符（如中文）。
+
+**解决方案**: 将 `btoa(svg)` 改为 `encodeURIComponent(svg)`，使用 URI 编码代替 base64 编码。
+
+**修改前**:
+```typescript
+return `data:image/svg+xml;base64,${btoa(svg)}`;
+```
+
+**修改后**:
+```typescript
+return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+```
+
+**优势**:
+- ✅ 支持所有 Unicode 字符（包括中文、表情符号等）
+- ✅ 编码效率更高
+- ✅ 不会导致页面崩溃
+
 ## 性能
 
 - **生成时间**: < 1ms
