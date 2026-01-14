@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, Save } from 'lucide-react';
+import { X, Save, Wand2 } from 'lucide-react';
 import TagInput from '../TagInput/TagInput';
 import type { ContentType } from '../../types';
 import { highlight, languages } from 'prismjs';
@@ -89,6 +89,45 @@ export default function QuickSaveDialog({
     } catch (e) {
       console.error('Syntax highlighting error:', e);
       return content;
+    }
+  };
+
+  // 格式化代码
+  const formatCode = () => {
+    try {
+      // 基本的代码格式化：统一缩进
+      const lines = content.split('\n');
+      let indentLevel = 0;
+      const indentSize = 2;
+      
+      const formatted = lines.map(line => {
+        const trimmed = line.trim();
+        if (!trimmed) return '';
+        
+        // 减少缩进：遇到闭合括号
+        if (trimmed.startsWith('}') || trimmed.startsWith(']') || trimmed.startsWith(')')) {
+          indentLevel = Math.max(0, indentLevel - 1);
+        }
+        
+        // 应用缩进
+        const indentedLine = ' '.repeat(indentLevel * indentSize) + trimmed;
+        
+        // 增加缩进：遇到开括号
+        if (trimmed.endsWith('{') || trimmed.endsWith('[') || trimmed.endsWith('(')) {
+          indentLevel++;
+        }
+        // 处理同一行的闭合括号
+        else if (trimmed.startsWith('}') || trimmed.startsWith(']') || trimmed.startsWith(')')) {
+          // 已经处理过了
+        }
+        
+        return indentedLine;
+      });
+      
+      setContent(formatted.join('\n'));
+    } catch (error) {
+      console.error('Format error:', error);
+      alert('格式化失败，请手动调整');
     }
   };
 
@@ -203,13 +242,24 @@ export default function QuickSaveDialog({
               <label className="block text-sm font-medium text-gray-700">
                 内容预览
               </label>
-              <button
-                type="button"
-                onClick={() => setIsEditing(!isEditing)}
-                className="text-xs text-blue-600 hover:text-blue-700"
-              >
-                {isEditing ? '预览模式' : '编辑模式'}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={formatCode}
+                  className="text-xs text-green-600 hover:text-green-700 flex items-center gap-1"
+                  title="格式化代码（统一缩进）"
+                >
+                  <Wand2 size={12} />
+                  格式化
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="text-xs text-blue-600 hover:text-blue-700"
+                >
+                  {isEditing ? '预览模式' : '编辑模式'}
+                </button>
+              </div>
             </div>
 
             {isEditing ? (
