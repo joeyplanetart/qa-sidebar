@@ -1,4 +1,5 @@
-import { Tag, X } from 'lucide-react';
+import { useState } from 'react';
+import { Tag, X, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface TagFilterProps {
   selectedTags: string[];
@@ -15,12 +16,18 @@ export default function TagFilter({
   onClearAll,
   availableTags 
 }: TagFilterProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
   // 按使用频率排序的可用标签（未选中的）
   const unselectedTags = availableTags.filter(tag => !selectedTags.includes(tag));
   
   if (availableTags.length === 0) {
     return null;
   }
+
+  const displayLimit = 15;
+  const hasMoreTags = unselectedTags.length > displayLimit;
+  const displayTags = isExpanded ? unselectedTags : unselectedTags.slice(0, displayLimit);
 
   return (
     <div className="space-y-2">
@@ -50,22 +57,45 @@ export default function TagFilter({
 
       {/* 可用标签云 */}
       {unselectedTags.length > 0 && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm text-gray-500">标签:</span>
-          {unselectedTags.slice(0, 15).map((tag) => (
+        <div className="space-y-2">
+          <div 
+            className={`flex items-start gap-2 flex-wrap ${
+              isExpanded ? 'max-h-48 overflow-y-auto scrollbar-thin pr-2' : ''
+            }`}
+          >
+            <span className="text-sm text-gray-500 flex-shrink-0 pt-1">标签:</span>
+            <div className="flex flex-wrap gap-2 flex-1">
+              {displayTags.map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => onTagSelect(tag)}
+                  className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200 transition-colors flex-shrink-0"
+                >
+                  <Tag size={12} />
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          {/* 展开/收起按钮 */}
+          {hasMoreTags && (
             <button
-              key={tag}
-              onClick={() => onTagSelect(tag)}
-              className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200 transition-colors"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 hover:underline transition-colors"
             >
-              <Tag size={12} />
-              {tag}
+              {isExpanded ? (
+                <>
+                  <ChevronUp size={14} />
+                  收起
+                </>
+              ) : (
+                <>
+                  <ChevronDown size={14} />
+                  显示全部 {unselectedTags.length} 个标签（+{unselectedTags.length - displayLimit} 个）
+                </>
+              )}
             </button>
-          ))}
-          {unselectedTags.length > 15 && (
-            <span className="text-xs text-gray-400">
-              +{unselectedTags.length - 15} 更多
-            </span>
           )}
         </div>
       )}
