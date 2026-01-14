@@ -7,7 +7,10 @@
     "sidePanel",
     "storage",
     "activeTab",
-    "identity"
+    "identity",
+    "contextMenus",
+    "scripting",
+    "tabs"
   ],
   "host_permissions": [
     "https://*.supabase.co/*",
@@ -29,5 +32,28 @@
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content/content.ts"],
+      "run_at": "document_end"
+    }
+  ],
+  "commands": {
+    "insert-snippet": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+V",
+        "mac": "Command+Shift+V"
+      },
+      "description": "插入片段到当前页面"
+    },
+    "save-selection": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+S",
+        "mac": "Command+Shift+S"
+      },
+      "description": "保存选中文本为片段"
+    }
   }
 }

@@ -7,11 +7,15 @@ import ContentList from './components/ContentList/ContentList';
 import EditorModal from './components/Editor/EditorModal';
 import AuthPanel from './components/Auth/AuthPanel';
 import Dialog from './components/Dialog/Dialog';
+import QuickSaveDialog from './components/QuickSave/QuickSaveDialog';
+import QuickInsertDialog from './components/QuickInsert/QuickInsertDialog';
 import { useAuth } from './hooks/useAuth';
 import { useContents } from './hooks/useContents';
 import { useDialog } from './hooks/useDialog';
 import { getFromLocalStorage } from './services/storage';
-import type { ContentType } from './types';
+import { createContent } from './services/supabase';
+import { saveToLocalStorage } from './services/storage';
+import type { ContentType, ContentItem } from './types';
 
 // 启动日志 - 帮助确认代码已加载
 console.log('🎯 QA sidePanel 应用已加载');
@@ -27,6 +31,8 @@ function App() {
   const [editingContent, setEditingContent] = useState<string | null>(null);
   const [useLocalMode, setUseLocalMode] = useState(false);
   const [showAuthPanel, setShowAuthPanel] = useState(false);
+  const [quickSaveContent, setQuickSaveContent] = useState<string | null>(null);
+  const [showInsertDialog, setShowInsertDialog] = useState(false);
   
   const dialog = useDialog();
   
@@ -77,6 +83,30 @@ function App() {
       initializeMode();
     }
   }, [user, authLoading]);
+
+  // 监听来自 background 的消息
+  useEffect(() => {
+    const handleMessage = (message: {
+      type?: string;
+      data?: { content?: string; sourceUrl?: string; tabId?: number };
+    }) => {
+      console.log('App received message:', message);
+
+      if (message.type === 'QUICK_SAVE' && message.data?.content) {
+        // 显示快速保存对话框
+        setQuickSaveContent(message.data.content);
+      } else if (message.type === 'SHOW_INSERT_MODE') {
+        // 显示插入片段对话框
+        setShowInsertDialog(true);
+      }
+    };
+
+    chrome.runtime.onMessage.addListener(handleMessage);
+
+    return () => {
+      chrome.runtime.onMessage.removeListener(handleMessage);
+    };
+  }, []);
 
   // 提取所有可用标签
   const availableTags = useMemo(() => {
@@ -192,6 +222,71 @@ function App() {
     localStorage.setItem('qa_sider_use_local_mode', 'true');
   };
 
+  // 处理快速保存
+  const handleQuickSave = async (data: {
+    title: string;
+    content: string;
+    type: ContentType;
+    language?: string;
+    tags?: string[];
+  }) => {
+    try {
+      const now = Date.now();
+      const userId = useLocalMode ? 'local' : user?.uid;
+
+      if (!userId) {
+        await dialog.showAlert('请先登录或使用本地模式', '错误');
+        return;
+      }
+
+      if (useLocalMode) {
+        // 保存到本地
+        const localData = await getFromLocalStorage();
+        const newItem: ContentItem = {
+          id: `local_${now}`,
+          userId: 'local',
+          ...data,
+          createdAt: now,
+          updatedAt: now,
+        };
+        await saveToLocalStorage([...localData, newItem]);
+      } else {
+        // 保存到 Supabase
+        await createContent({
+          userId,
+          ...data,
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
+
+      setQuickSaveContent(null);
+      refresh();
+      await dialog.showAlert('片段已保存成功！', '成功');
+    } catch (error) {
+      console.error('快速保存失败:', error);
+      await dialog.showAlert('保存失败，请重试', '错误');
+    }
+  };
+
+  // 处理插入片段
+  const handleInsertSnippet = async (content: string) => {
+    try {
+      const response = await chrome.runtime.sendMessage({
+        action: 'insertToPage',
+        text: content,
+      });
+
+      if (response?.success) {
+        setShowInsertDialog(false);
+        await dialog.showAlert('片段已插入到页面！', '成功');
+      }
+    } catch (error) {
+      console.error('插入失败:', error);
+      await dialog.showAlert('插入失败，请确保页面有可编辑的输入框', '错误');
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -253,6 +348,23 @@ function App() {
           onClose={handleCloseEditor}
           onSave={handleSaveSuccess}
           showAlert={dialog.showAlert}
+        />
+      )}
+
+      {quickSaveContent && (
+        <QuickSaveDialog
+          initialContent={quickSaveContent}
+          onSave={handleQuickSave}
+          onClose={() => setQuickSaveContent(null)}
+          tagSuggestions={availableTags}
+        />
+      )}
+
+      {showInsertDialog && (
+        <QuickInsertDialog
+          contents={contents}
+          onInsert={handleInsertSnippet}
+          onClose={() => setShowInsertDialog(false)}
         />
       )}
 
