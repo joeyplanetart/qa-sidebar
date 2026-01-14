@@ -107,12 +107,12 @@ function App() {
       filtered = filtered.filter((item) => item.type === activeFilter);
     }
 
-    // 标签过滤
+    // 标签过滤（OR 逻辑）
     if (selectedTags.length > 0) {
       filtered = filtered.filter((item) => {
         if (!item.tags || item.tags.length === 0) return false;
-        // 内容必须包含所有选中的标签
-        return selectedTags.every(tag => item.tags!.includes(tag));
+        // 内容只要包含任一选中的标签即可
+        return selectedTags.some(tag => item.tags!.includes(tag));
       });
     }
 
