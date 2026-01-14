@@ -2,181 +2,181 @@
 
 ## 📊 整理结果
 
-### 整理前
-```
-根目录混乱，包含 31 个 .md 文件 ❌
-难以查找和维护
-```
-
-### 整理后
-```
-根目录：只保留 1 个 README.md ✅
-docs/：按分类整理 33 个文档 ✅
-结构清晰，易于维护
-```
+已将项目文档进行了精简整理，保留核心文档，使结构更加清晰。
 
 ---
 
-## 📁 新的目录结构
+## 📁 当前文档结构
 
 ```
 qa_sider/
-├── README.md                    ✅ GitHub 主页
+├── README.md                    ✅ 项目主页
 │
-└── docs/                        📚 文档中心
-    ├── README.md                📖 文档索引（入口）
-    ├── ORGANIZATION.md          📋 整理说明
-    ├── PROJECT_SUMMARY.md       📄 项目总结
-    │
-    ├── features/                ✨ 9 个功能文档
-    │   ├── EMAIL_AUTH_IMPLEMENTATION.md
-    │   ├── PIN_FEATURE_IMPLEMENTATION.md
-    │   └── ...
-    │
-    ├── setup/                   ⚙️ 8 个配置文档
-    │   ├── QUICKSTART.md
-    │   ├── SUPABASE_SETUP.md
-    │   └── ...
-    │
-    ├── debugging/               🐛 7 个调试文档
-    │   ├── HOW_TO_DEBUG.md
-    │   ├── TESTING_GUIDE.md
-    │   └── ...
-    │
-    ├── deployment/              🚀 2 个部署文档
-    │   ├── DEPLOYMENT.md
-    │   └── MIGRATION_TO_SUPABASE.md
-    │
-    └── troubleshooting/         🔧 4 个排查文档
-        ├── OAUTH_TROUBLESHOOTING.md
-        └── ...
+└── docs/                        📚 文档目录
+    ├── README.md                📖 文档索引
+    └── SUMMARY.md               📊 本文件
 ```
 
 ---
 
-## 📚 分类详情
+## 📚 文档说明
 
-### ✨ features/ - 功能实现（9 个文档）
-- Email 认证功能
-- 置顶功能及 Bug 修复
-- 图标配置
-- 对话框组件
-- 编辑器修复
+### 根目录 README.md
+项目的主要说明文档，包含：
+- ✨ 功能特性介绍
+- 🚀 快速开始指南
+- 🛠️ 技术栈说明
+- 📦 项目结构
+- 🎯 使用说明
+- 🔧 开发指南
+- 🗄️ 数据库设置
+
+### docs/README.md
+详细的开发文档，包含：
+- 📖 完整的安装步骤
+- 🎯 功能详解
+- 🔧 开发命令
+- 🐛 常见问题解决
+- 🗄️ 数据库结构说明
+- 📦 技术栈详情
+
+---
+
+## 🎯 主要功能
+
+### 1. Email 认证
+- 邮箱密码注册/登录
+- 可配置邮箱确认
+- 支持本地模式
+
+### 2. 内容管理
+- 代码片段、SQL、文本
+- Monaco Editor 编辑
+- 语法高亮
+
+### 3. 置顶功能
+- 常用内容置顶
+- 云端同步
+- 本地存储支持
+
+### 4. 搜索筛选
+- 实时搜索
+- 类型筛选
 - 性能优化
-- 使用模式
-
-### ⚙️ setup/ - 配置安装（8 个文档）
-- 快速开始
-- 详细安装
-- Supabase 配置
-- OAuth 配置
-- 数据库脚本
-
-### 🐛 debugging/ - 调试测试（7 个文档）
-- 调试指南
-- 测试指南
-- 测试清单
-- 快速测试
-
-### 🚀 deployment/ - 部署（2 个文档）
-- 部署指南
-- 数据迁移
-
-### 🔧 troubleshooting/ - 故障排查（4 个文档）
-- OAuth 问题
-- 登录问题
-- 自定义配置
 
 ---
 
-## 🎯 如何使用新结构
+## 🚀 快速开始
 
-### 1️⃣ 查看项目概览
+### 1. 安装依赖
 ```bash
-# 打开根目录 README
-cat README.md
+npm install
 ```
 
-### 2️⃣ 浏览所有文档
+### 2. 配置环境
 ```bash
-# 打开文档索引
-cat docs/README.md
+# 创建 .env 文件
+VITE_SUPABASE_URL=your-url
+VITE_SUPABASE_ANON_KEY=your-key
 ```
 
-### 3️⃣ 按需查找
-- 想快速开始？→ `docs/setup/QUICKSTART.md`
-- 想了解功能？→ `docs/features/`
-- 遇到问题了？→ `docs/troubleshooting/`
-- 要部署项目？→ `docs/deployment/`
-- 需要调试？→ `docs/debugging/`
+### 3. 配置数据库
+在 Supabase SQL 编辑器中创建表和策略（详见 docs/README.md）
+
+### 4. 构建加载
+```bash
+npm run build
+```
+然后在 Chrome 中加载 `dist` 目录
 
 ---
 
-## 📈 改进亮点
+## 🗄️ 数据库表结构
 
-### ✅ 结构清晰
-- 5 个主要分类，职责明确
-- 文档按功能归类，易于查找
-- 目录层次合理，不超过 2 层
-
-### ✅ 易于维护
-- 新文档有明确的存放位置
-- 文档索引 (`docs/README.md`) 统一管理
-- 命名规范统一
-
-### ✅ 用户友好
-- 根目录简洁，只保留 README
-- 文档索引提供多种查找方式
-- 每个分类都有清晰的说明
-
-### ✅ 向后兼容
-- 所有文档内容保持不变
-- 只是移动位置，没有删除
-- 废弃的文档也保留供参考
+### contents 表
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | uuid | 主键 |
+| userId | text | 用户 ID |
+| type | text | 类型 (code/sql/text) |
+| title | text | 标题 |
+| content | text | 内容 |
+| language | text | 编程语言 |
+| isPinned | boolean | 是否置顶 |
+| createdAt | bigint | 创建时间 |
+| updatedAt | bigint | 更新时间 |
 
 ---
 
-## 📊 统计数据
+## 🔧 开发
 
-| 项目 | 数量 |
-|------|------|
-| **总文档数** | 33 个 |
-| **根目录 .md 文件** | 1 个 (README.md) |
-| **分类数** | 5 个 |
-| **功能文档** | 9 个 |
-| **配置文档** | 8 个 |
-| **调试文档** | 7 个 |
-| **部署文档** | 2 个 |
-| **排查文档** | 4 个 |
-| **新增索引** | 2 个 (docs/README.md, ORGANIZATION.md) |
+```bash
+# 开发模式
+npm run dev
 
----
+# 构建
+npm run build
 
-## 🔗 关键文档快速链接
-
-### 新手必看
-1. [README.md](../README.md) - 项目首页
-2. [docs/README.md](./README.md) - 文档索引
-3. [QUICKSTART.md](./setup/QUICKSTART.md) - 快速开始
-
-### 功能配置
-1. [EMAIL_AUTH_IMPLEMENTATION.md](./features/EMAIL_AUTH_IMPLEMENTATION.md) - Email 登录
-2. [PIN_FEATURE_IMPLEMENTATION.md](./features/PIN_FEATURE_IMPLEMENTATION.md) - 置顶功能
-3. [SUPABASE_SETUP.md](./setup/SUPABASE_SETUP.md) - Supabase 配置
-
-### 问题解决
-1. [HOW_TO_DEBUG.md](./debugging/HOW_TO_DEBUG.md) - 调试指南
-2. [OAUTH_TROUBLESHOOTING.md](./troubleshooting/OAUTH_TROUBLESHOOTING.md) - OAuth 问题
+# 检查
+npm run lint
+```
 
 ---
 
-## 🎉 整理完成！
+## 🐛 故障排查
 
-文档已经整理得井井有条，现在可以：
+### 页面空白
+- 检查控制台错误
+- 确认 Supabase 配置
+- 验证数据库表结构
 
-✅ 快速找到需要的文档
-✅ 轻松添加新文档
-✅ 方便维护和更新
-✅ 更好的 GitHub 展示
+### 登录失败
+- 检查环境变量
+- 确认网络连接
+- 查看控制台日志
 
-享受清爽的文档结构吧！📚✨
+### 置顶失败
+- 确认数据库有 `isPinned` 字段
+- 检查 RLS 策略
+
+---
+
+## 📦 技术栈
+
+- React 18 + TypeScript
+- Vite + @crxjs/vite-plugin
+- TailwindCSS
+- Monaco Editor
+- Prism.js
+- Supabase
+- Zustand
+- Lucide React
+- React Virtuoso
+
+---
+
+## 🎉 使用提示
+
+### 首次使用
+1. 注册账号或选择本地模式
+2. 创建第一个代码片段
+3. 尝试置顶功能
+4. 使用搜索和筛选
+
+### 最佳实践
+- 为常用片段添加清晰的标题
+- 使用置顶功能快速访问
+- 定期清理不需要的内容
+- 利用搜索快速定位
+
+---
+
+## 📄 许可证
+
+MIT License
+
+---
+
+最后更新：2026-01-14
+
+文档已精简完毕，保持简洁清晰！✨

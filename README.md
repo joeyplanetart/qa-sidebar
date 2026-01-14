@@ -46,33 +46,6 @@ npm run build
 4. 选择项目的 `dist` 目录
 5. 点击扩展图标打开侧边栏
 
-## 📚 文档
-
-完整文档位于 [`docs/`](./docs/) 目录：
-
-- **[快速开始](./docs/setup/QUICKSTART.md)** - 快速上手指南
-- **[安装说明](./docs/setup/INSTALL.md)** - 详细安装步骤
-- **[功能介绍](./docs/features/)** - 各项功能的使用说明
-- **[开发指南](./docs/debugging/)** - 调试和测试
-- **[部署指南](./docs/deployment/)** - 生产环境部署
-
-### 主要文档链接
-
-#### 配置与安装
-- [Supabase 配置](./docs/setup/SUPABASE_SETUP.md)
-- [安装指南](./docs/setup/INSTALL.md)
-- [快速开始](./docs/setup/QUICKSTART.md)
-
-#### 功能说明
-- [Email 认证](./docs/features/EMAIL_AUTH_IMPLEMENTATION.md)
-- [置顶功能](./docs/features/PIN_FEATURE_IMPLEMENTATION.md)
-- [图标配置](./docs/features/ICON_SETUP.md)
-- [使用模式](./docs/features/USAGE_MODES.md)
-
-#### 调试与测试
-- [调试指南](./docs/debugging/HOW_TO_DEBUG.md)
-- [测试指南](./docs/debugging/TESTING_GUIDE.md)
-
 ## 🛠️ 技术栈
 
 - **前端框架**: React 18 + TypeScript
@@ -102,12 +75,7 @@ qa_sider/
 │   └── utils/              # 工具函数
 ├── public/                  # 静态资源
 │   └── icons/              # 扩展图标
-├── docs/                    # 📚 文档目录
-│   ├── features/           # 功能说明
-│   ├── setup/              # 配置安装
-│   ├── debugging/          # 调试测试
-│   ├── deployment/         # 部署相关
-│   └── troubleshooting/    # 故障排查
+├── docs/                    # 📚 文档
 ├── manifest.json            # Chrome 扩展配置
 └── package.json            # 项目依赖
 ```
@@ -118,7 +86,7 @@ qa_sider/
 
 1. 首次使用时，点击 **"没有账号？点击注册"**
 2. 输入邮箱和密码（至少 6 位）
-3. 注册成功后自动登录（无需邮箱确认）
+3. 注册成功后自动登录
 4. 或点击 **"稍后登录"** 使用本地模式
 
 ### 创建内容
@@ -168,13 +136,48 @@ VITE_SUPABASE_URL=your-supabase-url
 VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 ```
 
-## 🐛 故障排除
+## 🗄️ 数据库设置
 
-遇到问题？查看我们的故障排查文档：
+在 Supabase SQL 编辑器中执行以下 SQL 创建表和索引：
 
-- [常见问题](./docs/troubleshooting/)
-- [OAuth 问题](./docs/troubleshooting/OAUTH_TROUBLESHOOTING.md)
-- [登录问题](./docs/troubleshooting/LOGIN_LOGIC.md)
+```sql
+-- 创建 contents 表
+CREATE TABLE contents (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  "userId" text NOT NULL,
+  type text NOT NULL,
+  title text NOT NULL,
+  content text NOT NULL,
+  language text,
+  "isPinned" boolean DEFAULT false,
+  "createdAt" bigint NOT NULL,
+  "updatedAt" bigint NOT NULL
+);
+
+-- 创建索引
+CREATE INDEX idx_contents_userId ON contents("userId");
+CREATE INDEX idx_contents_isPinned ON contents("isPinned", "createdAt" DESC);
+
+-- 启用 RLS
+ALTER TABLE contents ENABLE ROW LEVEL SECURITY;
+
+-- 创建安全策略
+CREATE POLICY "Users can read own contents"
+ON contents FOR SELECT
+USING (auth.uid()::text = "userId");
+
+CREATE POLICY "Users can create own contents"
+ON contents FOR INSERT
+WITH CHECK (auth.uid()::text = "userId");
+
+CREATE POLICY "Users can update own contents"
+ON contents FOR UPDATE
+USING (auth.uid()::text = "userId");
+
+CREATE POLICY "Users can delete own contents"
+ON contents FOR DELETE
+USING (auth.uid()::text = "userId");
+```
 
 ## 🤝 贡献
 
@@ -182,7 +185,7 @@ VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 
 ## 📄 许可证
 
-MIT License - 详见 [LICENSE](./LICENSE) 文件
+MIT License
 
 ## 🙏 致谢
 
