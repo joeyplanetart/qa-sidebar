@@ -226,28 +226,29 @@ export default function QuickSaveDialog({
               />
             ) : (
               /* 预览模式 - 语法高亮 */
-              <div className="w-full h-48 overflow-auto border border-gray-300 rounded-lg">
+              <div className="w-full h-48 overflow-auto border border-gray-300 rounded-lg bg-gray-900">
                 {language === 'plaintext' ? (
-                  <pre className="px-3 py-2 bg-gray-50 font-mono text-sm whitespace-pre m-0" style={{ lineHeight: '1.5' }}>
+                  <pre className="px-3 py-2 bg-gray-50 font-mono text-sm whitespace-pre m-0 min-h-full" style={{ lineHeight: '1.5' }}>
                     {content}
                   </pre>
                 ) : (
                   <pre 
                     ref={previewRef}
-                    className="bg-gray-900 h-full m-0 p-3 overflow-auto"
+                    className="m-0 p-3 min-h-full"
                     style={{
                       fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
                       fontSize: '13px',
-                      lineHeight: '1.5',
+                      lineHeight: '1.6',
                       whiteSpace: 'pre',
-                      wordWrap: 'normal',
+                      tabSize: 2,
                     }}
                   >
                     <code 
                       className={`language-${language}`}
                       style={{
                         whiteSpace: 'pre',
-                        display: 'block',
+                        display: 'inline-block',
+                        minWidth: '100%',
                       }}
                       dangerouslySetInnerHTML={{ __html: getHighlightedCode() }}
                     />
