@@ -89,26 +89,6 @@ qa_sider/
 3. 注册成功后自动登录
 4. 或点击 **"稍后登录"** 使用本地模式
 
-### 创建内容
-
-1. 点击右上角 **"新建"** 按钮
-2. 输入标题
-3. 选择类型（代码/SQL/文本）
-4. 选择编程语言（可选）
-5. 在 Monaco Editor 中编辑内容
-6. 点击 **"保存"**
-
-### 置顶常用内容
-
-1. 点击内容卡片右上角的 📌 图标
-2. 置顶的内容会自动排在列表最前面
-3. 再次点击可取消置顶
-
-### 搜索和筛选
-
-- 在搜索框输入关键词进行实时搜索
-- 点击分类标签筛选特定类型的内容
-- 搜索和筛选可以同时使用
 
 ## 🔧 开发
 
@@ -126,58 +106,7 @@ npm run lint
 tsc --noEmit
 ```
 
-## 📝 环境变量
 
-创建 `.env` 文件：
-
-```env
-# Supabase 配置
-VITE_SUPABASE_URL=your-supabase-url
-VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
-```
-
-## 🗄️ 数据库设置
-
-在 Supabase SQL 编辑器中执行以下 SQL 创建表和索引：
-
-```sql
--- 创建 contents 表
-CREATE TABLE contents (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "userId" text NOT NULL,
-  type text NOT NULL,
-  title text NOT NULL,
-  content text NOT NULL,
-  language text,
-  "isPinned" boolean DEFAULT false,
-  "createdAt" bigint NOT NULL,
-  "updatedAt" bigint NOT NULL
-);
-
--- 创建索引
-CREATE INDEX idx_contents_userId ON contents("userId");
-CREATE INDEX idx_contents_isPinned ON contents("isPinned", "createdAt" DESC);
-
--- 启用 RLS
-ALTER TABLE contents ENABLE ROW LEVEL SECURITY;
-
--- 创建安全策略
-CREATE POLICY "Users can read own contents"
-ON contents FOR SELECT
-USING (auth.uid()::text = "userId");
-
-CREATE POLICY "Users can create own contents"
-ON contents FOR INSERT
-WITH CHECK (auth.uid()::text = "userId");
-
-CREATE POLICY "Users can update own contents"
-ON contents FOR UPDATE
-USING (auth.uid()::text = "userId");
-
-CREATE POLICY "Users can delete own contents"
-ON contents FOR DELETE
-USING (auth.uid()::text = "userId");
-```
 
 ## 🤝 贡献
 
@@ -189,7 +118,6 @@ MIT License
 
 ## 🙏 致谢
 
-- [Supabase](https://supabase.com/) - 后端服务
 - [Monaco Editor](https://microsoft.github.io/monaco-editor/) - 代码编辑器
 - [Prism.js](https://prismjs.com/) - 语法高亮
 - [Lucide](https://lucide.dev/) - 图标库
