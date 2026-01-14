@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getContents, deleteContent as deleteContentFromSupabase } from '../services/supabase';
+import { getContents, deleteContent as deleteContentFromSupabase, togglePinContent as togglePinInSupabase } from '../services/supabase';
 import { getFromLocalStorage, saveToLocalStorage } from '../services/storage';
 import type { ContentItem } from '../types';
 
@@ -46,9 +46,37 @@ export const useContents = (userId: string | undefined) => {
     }
   };
 
+  const togglePin = async (id: string) => {
+    try {
+      const item = contents.find((c) => c.id === id);
+      if (!item) return;
+
+      const newPinnedState = !item.isPinned;
+
+      if (userId) {
+        // 使用 Supabase
+        await togglePinInSupabase(id, newPinnedState);
+      } else {
+        // 使用本地存储
+        const updatedContents = contents.map((c) =>
+          c.id === id ? { ...c, isPinned: newPinnedState } : c
+        );
+        await saveToLocalStorage(updatedContents);
+      }
+
+      // 更新本地状态
+      setContents((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, isPinned: newPinnedState } : c))
+      );
+    } catch (error) {
+      console.error('切换置顶状态失败:', error);
+      throw error;
+    }
+  };
+
   const refresh = () => {
     loadContents();
   };
 
-  return { contents, loading, deleteContent, refresh };
+  return { contents, loading, deleteContent, togglePin, refresh };
 };

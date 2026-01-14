@@ -1,4 +1,4 @@
-import { FileText, Code, Database, Edit, Trash2, Copy, Check } from 'lucide-react';
+import { FileText, Code, Database, Edit, Trash2, Copy, Check, Pin, PinOff } from 'lucide-react';
 import type { ContentItem } from '../../types';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
@@ -16,6 +16,7 @@ interface ContentListProps {
   loading: boolean;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+  onTogglePin: (id: string) => void;
   showAlert: (message: string, title?: string) => Promise<boolean>;
 }
 
@@ -51,12 +52,14 @@ const ContentItemRow = memo(
     onCopy,
     onEdit,
     onDelete,
+    onTogglePin,
   }: {
     item: ContentItem;
     copiedId: string | null;
     onCopy: (item: ContentItem) => void;
     onEdit: (id: string) => void;
     onDelete: (id: string) => void;
+    onTogglePin: (id: string) => void;
   }) => {
     const Icon = typeIcons[item.type];
     const previewContent = item.content.slice(0, 200);
@@ -67,12 +70,15 @@ const ContentItemRow = memo(
     }, [item.content]);
 
     return (
-      <div className="bg-white rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow">
+      <div className={`bg-white rounded-lg p-4 border ${item.isPinned ? 'border-yellow-400 shadow-md' : 'border-gray-200'} hover:shadow-md transition-shadow`}>
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               <Icon size={18} className="text-primary" />
               <h3 className="font-semibold text-gray-900">{item.title}</h3>
+              {item.isPinned && (
+                <Pin size={14} className="text-yellow-600 fill-yellow-600" />
+              )}
             </div>
             <div className="flex items-center gap-2 ml-6">
               <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800">
@@ -86,6 +92,17 @@ const ContentItemRow = memo(
             </div>
           </div>
           <div className="flex items-center gap-1">
+            <button
+              onClick={() => onTogglePin(item.id)}
+              className={`p-1.5 rounded transition-colors ${
+                item.isPinned
+                  ? 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50'
+                  : 'text-gray-500 hover:text-yellow-600 hover:bg-yellow-50'
+              }`}
+              title={item.isPinned ? '取消置顶' : '置顶'}
+            >
+              {item.isPinned ? <Pin size={16} className="fill-yellow-600" /> : <PinOff size={16} />}
+            </button>
             <button
               onClick={() => onCopy(item)}
               className="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
@@ -138,7 +155,7 @@ const ContentItemRow = memo(
 
 ContentItemRow.displayName = 'ContentItemRow';
 
-export default function ContentList({ contents, loading, onEdit, onDelete, showAlert }: ContentListProps) {
+export default function ContentList({ contents, loading, onEdit, onDelete, onTogglePin, showAlert }: ContentListProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const handleCopy = async (item: ContentItem) => {
@@ -183,6 +200,7 @@ export default function ContentList({ contents, loading, onEdit, onDelete, showA
               onCopy={handleCopy}
               onEdit={onEdit}
               onDelete={onDelete}
+              onTogglePin={onTogglePin}
             />
           </div>
         )}

@@ -9,6 +9,7 @@ export interface ContentItem {
   language?: string;
   formattedHtml?: string;
   tags?: string[];
+  isPinned?: boolean;
   createdAt: number;
   updatedAt: number;
 }

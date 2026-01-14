@@ -30,7 +30,7 @@ function App() {
   
   const { user, loading: authLoading } = useAuth();
   // 使用本地模式时传入 undefined，使用 Supabase 时传入用户 ID
-  const { contents, loading: contentsLoading, deleteContent, refresh } = useContents(
+  const { contents, loading: contentsLoading, deleteContent, togglePin, refresh } = useContents(
     useLocalMode ? undefined : user?.uid
   );
 
@@ -109,8 +109,18 @@ function App() {
       filtered = filtered.filter((item) => matchingIds.has(item.id));
     }
 
-    // 排序（按创建时间降序）
-    return filtered.sort((a, b) => b.createdAt - a.createdAt);
+    // 排序：置顶的在前面，然后按创建时间降序
+    return filtered.sort((a, b) => {
+      // 如果一个置顶一个不置顶，置顶的在前
+      const aPinned = a.isPinned ?? false;
+      const bPinned = b.isPinned ?? false;
+      
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+      
+      // 都置顶或都不置顶，按创建时间降序
+      return b.createdAt - a.createdAt;
+    });
   }, [contents, activeFilter, searchQuery, searchIndex]);
 
   const handleNewContent = () => {
@@ -130,6 +140,15 @@ function App() {
     );
     if (confirmed) {
       await deleteContent(id);
+    }
+  };
+
+  const handleTogglePin = async (id: string) => {
+    try {
+      await togglePin(id);
+    } catch (error) {
+      console.error('置顶操作失败:', error);
+      await dialog.showAlert('置顶操作失败，请重试', '错误');
     }
   };
 
@@ -192,6 +211,7 @@ function App() {
             loading={contentsLoading}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            onTogglePin={handleTogglePin}
             showAlert={dialog.showAlert}
           />
         </div>

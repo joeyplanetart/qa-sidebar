@@ -142,6 +142,24 @@ export const updateContent = async (id: string, data: Partial<ContentItem>) => {
   }
 };
 
+// 切换置顶状态
+export const togglePinContent = async (id: string, isPinned: boolean) => {
+  try {
+    const { error } = await supabase
+      .from(CONTENTS_TABLE)
+      .update({ isPinned })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Supabase 更新置顶状态错误:', error);
+      throw new Error(`置顶操作失败: ${error.message}`);
+    }
+  } catch (error) {
+    console.error('切换置顶状态失败:', error);
+    throw error;
+  }
+};
+
 export const deleteContent = async (id: string) => {
   try {
     const { error } = await supabase
