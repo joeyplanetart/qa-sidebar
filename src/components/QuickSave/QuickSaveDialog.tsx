@@ -239,10 +239,16 @@ export default function QuickSaveDialog({
                       fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
                       fontSize: '13px',
                       lineHeight: '1.5',
+                      whiteSpace: 'pre',
+                      wordWrap: 'normal',
                     }}
                   >
                     <code 
                       className={`language-${language}`}
+                      style={{
+                        whiteSpace: 'pre',
+                        display: 'block',
+                      }}
                       dangerouslySetInnerHTML={{ __html: getHighlightedCode() }}
                     />
                   </pre>
