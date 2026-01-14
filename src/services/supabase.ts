@@ -30,6 +30,42 @@ export const signInWithGoogle = async () => {
   }
 };
 
+// Email 注册
+export const signUpWithEmail = async (email: string, password: string) => {
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        // 禁用邮箱确认，注册后自动登录
+        emailRedirectTo: undefined,
+      },
+    });
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Email 注册失败:', error);
+    throw error;
+  }
+};
+
+// Email 登录
+export const signInWithEmail = async (email: string, password: string) => {
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Email 登录失败:', error);
+    throw error;
+  }
+};
+
 export const signOutUser = async () => {
   try {
     const { error } = await supabase.auth.signOut();

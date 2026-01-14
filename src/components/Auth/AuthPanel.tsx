@@ -1,4 +1,5 @@
 import { signInWithChromeIdentity } from '../../services/chromeAuth';
+import { signUpWithEmail, signInWithEmail } from '../../services/supabase';
 import { useState } from 'react';
 
 interface AuthPanelProps {
@@ -8,6 +9,10 @@ interface AuthPanelProps {
 
 export default function AuthPanel({ onSkipLogin, showAlert }: AuthPanelProps) {
   const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
@@ -40,6 +45,76 @@ export default function AuthPanel({ onSkipLogin, showAlert }: AuthPanelProps) {
     }
   };
 
+  const handleEmailAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // 表单验证
+    if (!email || !password) {
+      await showAlert('请填写邮箱和密码', '输入错误');
+      return;
+    }
+
+    if (isSignUp && password !== confirmPassword) {
+      await showAlert('两次输入的密码不一致', '输入错误');
+      return;
+    }
+
+    if (password.length < 6) {
+      await showAlert('密码长度至少为 6 位', '输入错误');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      if (isSignUp) {
+        // 注册
+        const result = await signUpWithEmail(email, password);
+        
+        // 检查是否需要邮箱确认
+        if (result.user && result.session) {
+          // 注册成功且已自动登录
+          await showAlert('注册成功！', '成功');
+          // useAuth hook 会自动检测到认证状态变化，无需手动操作
+        } else if (result.user && !result.session) {
+          // 需要邮箱确认
+          await showAlert('注册成功！请检查邮箱并确认您的账号。', '注册成功');
+          setIsSignUp(false);
+          setEmail('');
+          setPassword('');
+          setConfirmPassword('');
+        }
+      } else {
+        // 登录
+        await signInWithEmail(email, password);
+        // 登录成功后，useAuth hook 会自动检测到认证状态变化
+      }
+    } catch (error) {
+      console.error('❌ 认证失败:', error);
+      
+      let errorMessage = isSignUp ? '注册失败' : '登录失败';
+      
+      if (error instanceof Error) {
+        const message = error.message.toLowerCase();
+        
+        if (message.includes('invalid login credentials')) {
+          errorMessage = '邮箱或密码错误';
+        } else if (message.includes('user already registered')) {
+          errorMessage = '该邮箱已被注册';
+        } else if (message.includes('invalid email')) {
+          errorMessage = '邮箱格式不正确';
+        } else if (message.includes('email not confirmed')) {
+          errorMessage = '请先确认您的邮箱';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      await showAlert(errorMessage, isSignUp ? '注册错误' : '登录错误');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full mx-4">
       <div className="text-center mb-8">
@@ -48,33 +123,122 @@ export default function AuthPanel({ onSkipLogin, showAlert }: AuthPanelProps) {
       </div>
 
       <div className="space-y-4">
-        <button
-          onClick={handleGoogleSignIn}
-          disabled={loading}
-          className="w-full flex items-center justify-center gap-3 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <svg className="w-5 h-5" viewBox="0 0 24 24">
-            <path
-              fill="#4285F4"
-              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+        {/* Email 登录/注册表单 */}
+        <form onSubmit={handleEmailAuth} className="space-y-4">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              邮箱
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              placeholder="请输入邮箱"
+              autoComplete="email"
             />
-            <path
-              fill="#34A853"
-              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              密码
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              placeholder="至少 6 位密码"
+              autoComplete={isSignUp ? "new-password" : "current-password"}
             />
-            <path
-              fill="#FBBC05"
-              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-            />
-            <path
-              fill="#EA4335"
-              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-            />
-          </svg>
-          <span className="font-medium text-gray-700">
-            {loading ? '登录中...' : '使用 Google 账号登录'}
-          </span>
-        </button>
+          </div>
+
+          {isSignUp && (
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                确认密码
+              </label>
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={loading}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                placeholder="再次输入密码"
+                autoComplete="new-password"
+              />
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+          >
+            {loading ? (isSignUp ? '注册中...' : '登录中...') : (isSignUp ? '注册' : '登录')}
+          </button>
+        </form>
+
+        {/* 切换注册/登录 */}
+        <div className="text-center">
+          <button
+            onClick={() => {
+              setIsSignUp(!isSignUp);
+              setPassword('');
+              setConfirmPassword('');
+            }}
+            disabled={loading}
+            className="text-blue-600 hover:text-blue-700 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSignUp ? '已有账号？点击登录' : '没有账号？点击注册'}
+          </button>
+        </div>
+
+        {/* 分隔线 */}
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white text-gray-500">或</span>
+          </div>
+        </div>
+
+        {/* Google 登录按钮 - 暂时隐藏 */}
+        {false && (
+          <button
+            onClick={handleGoogleSignIn}
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-3 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <path
+                fill="#4285F4"
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+              />
+            </svg>
+            <span className="font-medium text-gray-700">
+              {loading ? '登录中...' : '使用 Google 账号登录'}
+            </span>
+          </button>
+        )}
 
         <button
           onClick={onSkipLogin}
