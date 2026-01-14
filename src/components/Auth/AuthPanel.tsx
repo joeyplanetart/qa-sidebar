@@ -118,8 +118,8 @@ export default function AuthPanel({ onSkipLogin, showAlert }: AuthPanelProps) {
   return (
     <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full mx-4">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-primary mb-2">内容管理器</h1>
-        <p className="text-gray-600">保存并管理您的代码片段</p>
+        <h1 className="text-3xl font-bold text-primary mb-2">QA SidePanel</h1>
+        <p className="text-gray-600">专为QA打造的侧边栏笔记工具！</p>
       </div>
 
       <div className="space-y-4">
