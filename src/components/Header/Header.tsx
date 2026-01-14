@@ -72,8 +72,14 @@ export default function Header({ user, onNewContent, showAlert }: HeaderProps) {
                 className="w-8 h-8 rounded-full shadow-sm"
               />
               <div className="text-sm">
-                <div className="font-medium text-gray-900">{user.displayName || user.email || '用户'}</div>
-                <div className="text-gray-500 text-xs">{user.email}</div>
+                <div className="font-medium text-gray-900">
+                  {user.displayName && user.displayName !== user.email 
+                    ? user.displayName 
+                    : (user.email || '用户')}
+                </div>
+                {user.displayName && user.displayName !== user.email && (
+                  <div className="text-gray-500 text-xs">{user.email}</div>
+                )}
               </div>
             </>
           ) : (
