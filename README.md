@@ -131,7 +131,7 @@ qa_sider/
 - `Alt+Shift+S` / `Cmd+Shift+D` - 保存选中文本
 - `Ctrl+Shift+V` / `Cmd+Shift+V` - 插入片段
 
-> 💡 提示：如果快捷键冲突，可以在 `chrome://extensions/shortcuts` 中自定义
+> 💡 提示：如果快捷键冲突，可以在 `chrome://extensions/shortcuts` 中自定义。详见 [快捷键配置指南](KEYBOARD_SHORTCUTS.md)
 
 详细说明请查看 [快速插入功能文档](QUICK_INSERT_FEATURE.md)
 
