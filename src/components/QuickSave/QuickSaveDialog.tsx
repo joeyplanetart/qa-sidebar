@@ -1,7 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, Save } from 'lucide-react';
 import TagInput from '../TagInput/TagInput';
 import type { ContentType } from '../../types';
+import { highlight, languages } from 'prismjs';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-typescript';
+import 'prismjs/components/prism-python';
+import 'prismjs/components/prism-java';
+import 'prismjs/components/prism-sql';
+import 'prismjs/components/prism-markup';
+import 'prismjs/components/prism-css';
+import 'prismjs/components/prism-json';
+import 'prismjs/themes/prism-tomorrow.css';
 
 interface QuickSaveDialogProps {
   initialContent: string;
@@ -39,12 +49,48 @@ export default function QuickSaveDialog({
   const [language, setLanguage] = useState('plaintext');
   const [tags, setTags] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const previewRef = useRef<HTMLPreElement>(null);
 
   // 自动检测语言类型
   useEffect(() => {
     const detectedLang = detectLanguage(initialContent);
     setLanguage(detectedLang);
   }, [initialContent]);
+
+  // 获取 Prism 语言对象
+  const getPrismLanguage = (lang: string) => {
+    const languageMap: Record<string, any> = {
+      javascript: languages.javascript,
+      typescript: languages.typescript,
+      python: languages.python,
+      java: languages.java,
+      sql: languages.sql,
+      html: languages.markup,
+      css: languages.css,
+      json: languages.json,
+    };
+    return languageMap[lang] || null;
+  };
+
+  // 生成高亮后的 HTML
+  const getHighlightedCode = () => {
+    if (language === 'plaintext' || !content) {
+      return content;
+    }
+
+    const prismLang = getPrismLanguage(language);
+    if (!prismLang) {
+      return content;
+    }
+
+    try {
+      return highlight(content, prismLang, language);
+    } catch (e) {
+      console.error('Syntax highlighting error:', e);
+      return content;
+    }
+  };
 
   const detectLanguage = (text: string): string => {
     // 简单的语言检测逻辑
@@ -153,17 +199,59 @@ export default function QuickSaveDialog({
 
           {/* 内容预览 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              内容预览
-            </label>
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="w-full h-48 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none font-mono text-sm"
-              readOnly={false}
-            />
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-700">
+                内容预览
+              </label>
+              <button
+                type="button"
+                onClick={() => setIsEditing(!isEditing)}
+                className="text-xs text-blue-600 hover:text-blue-700"
+              >
+                {isEditing ? '预览模式' : '编辑模式'}
+              </button>
+            </div>
+
+            {isEditing ? (
+              /* 编辑模式 - 普通 textarea */
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="w-full h-48 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none font-mono text-sm bg-white"
+                spellCheck={false}
+                style={{
+                  tabSize: 2,
+                  lineHeight: '1.5',
+                }}
+              />
+            ) : (
+              /* 预览模式 - 语法高亮 */
+              <div className="w-full h-48 overflow-auto border border-gray-300 rounded-lg">
+                {language === 'plaintext' ? (
+                  <pre className="px-3 py-2 bg-gray-50 font-mono text-sm whitespace-pre m-0" style={{ lineHeight: '1.5' }}>
+                    {content}
+                  </pre>
+                ) : (
+                  <pre 
+                    ref={previewRef}
+                    className="bg-gray-900 h-full m-0 p-3 overflow-auto"
+                    style={{
+                      fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
+                      fontSize: '13px',
+                      lineHeight: '1.5',
+                    }}
+                  >
+                    <code 
+                      className={`language-${language}`}
+                      dangerouslySetInnerHTML={{ __html: getHighlightedCode() }}
+                    />
+                  </pre>
+                )}
+              </div>
+            )}
+
             <p className="mt-1 text-xs text-gray-500">
-              {content.length} 字符
+              {content.length} 字符 · {language === 'plaintext' ? '纯文本' : languageOptions.find(l => l.value === language)?.label}
             </p>
           </div>
         </div>
