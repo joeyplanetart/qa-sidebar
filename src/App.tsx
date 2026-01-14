@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Header from './components/Header/Header';
 import SearchBar from './components/SearchBar/SearchBar';
 import FilterTabs from './components/FilterTabs/FilterTabs';
+import TagFilter from './components/TagFilter/TagFilter';
 import ContentList from './components/ContentList/ContentList';
 import EditorModal from './components/Editor/EditorModal';
 import AuthPanel from './components/Auth/AuthPanel';
@@ -21,6 +22,7 @@ console.log('🔑 Chrome Identity 可用:', typeof chrome?.identity !== 'undefin
 function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<'all' | ContentType>('all');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editingContent, setEditingContent] = useState<string | null>(null);
   const [useLocalMode, setUseLocalMode] = useState(false);
@@ -76,6 +78,17 @@ function App() {
     }
   }, [user, authLoading]);
 
+  // 提取所有可用标签
+  const availableTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    contents.forEach(item => {
+      if (item.tags) {
+        item.tags.forEach(tag => tagSet.add(tag));
+      }
+    });
+    return Array.from(tagSet).sort();
+  }, [contents]);
+
   // 创建搜索索引（缓存小写版本以优化性能）
   const searchIndex = useMemo(() => {
     return contents.map((item) => ({
@@ -92,6 +105,15 @@ function App() {
     // 类型过滤
     if (activeFilter !== 'all') {
       filtered = filtered.filter((item) => item.type === activeFilter);
+    }
+
+    // 标签过滤
+    if (selectedTags.length > 0) {
+      filtered = filtered.filter((item) => {
+        if (!item.tags || item.tags.length === 0) return false;
+        // 内容必须包含所有选中的标签
+        return selectedTags.every(tag => item.tags!.includes(tag));
+      });
     }
 
     // 搜索过滤（使用索引优化）
@@ -121,7 +143,7 @@ function App() {
       // 都置顶或都不置顶，按创建时间降序
       return b.createdAt - a.createdAt;
     });
-  }, [contents, activeFilter, searchQuery, searchIndex]);
+  }, [contents, activeFilter, selectedTags, searchQuery, searchIndex]);
 
   const handleNewContent = () => {
     setEditingContent(null);
@@ -203,6 +225,13 @@ function App() {
         <div className="p-4 space-y-4">
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
           <FilterTabs active={activeFilter} onChange={setActiveFilter} />
+          <TagFilter
+            selectedTags={selectedTags}
+            onTagSelect={(tag) => setSelectedTags([...selectedTags, tag])}
+            onTagRemove={(tag) => setSelectedTags(selectedTags.filter(t => t !== tag))}
+            onClearAll={() => setSelectedTags([])}
+            availableTags={availableTags}
+          />
         </div>
 
         <div className="flex-1 overflow-y-auto px-4 pb-4">

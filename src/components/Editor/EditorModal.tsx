@@ -12,8 +12,9 @@ import 'prismjs/components/prism-css';
 import 'prismjs/components/prism-json';
 import 'prismjs/themes/prism-tomorrow.css';
 import type { ContentType, ContentItem } from '../../types';
-import { getContentById, createContent, updateContent } from '../../services/supabase';
+import { getContentById, createContent, updateContent, getContents } from '../../services/supabase';
 import { getFromLocalStorage, saveToLocalStorage } from '../../services/storage';
+import TagInput from '../TagInput/TagInput';
 
 interface EditorModalProps {
   contentId: string | null;
@@ -40,6 +41,8 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
   const [content, setContent] = useState('');
   const [type, setType] = useState<ContentType>('code');
   const [language, setLanguage] = useState('javascript');
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(!!contentId);
 
@@ -47,7 +50,35 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
     if (contentId) {
       loadContent();
     }
+    loadTagSuggestions();
   }, [contentId]);
+
+  // 加载历史标签作为建议
+  const loadTagSuggestions = async () => {
+    try {
+      let allContents: ContentItem[] = [];
+      
+      if (userId) {
+        // 从 Supabase 加载所有内容
+        allContents = await getContents(userId);
+      } else {
+        // 从本地存储加载
+        allContents = await getFromLocalStorage();
+      }
+      
+      // 提取所有标签并去重
+      const allTags = new Set<string>();
+      allContents.forEach(item => {
+        if (item.tags) {
+          item.tags.forEach(tag => allTags.add(tag));
+        }
+      });
+      
+      setTagSuggestions(Array.from(allTags).sort());
+    } catch (error) {
+      console.error('加载标签建议失败:', error);
+    }
+  };
 
   const loadContent = async () => {
     if (!contentId) return;
@@ -61,6 +92,7 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
           setContent(data.content);
           setType(data.type);
           setLanguage(data.language || 'javascript');
+          setTags(data.tags || []);
         }
       } else {
         // 从本地存储加载
@@ -71,6 +103,7 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
           setContent(item.content);
           setType(item.type);
           setLanguage(item.language || 'javascript');
+          setTags(item.tags || []);
         }
       }
     } catch (error) {
@@ -102,6 +135,7 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
             content: content.trim(),
             type,
             language: type === 'text' ? undefined : language,
+            tags: tags.length > 0 ? tags : undefined,
             updatedAt: Date.now(),
           });
         } else {
@@ -112,6 +146,7 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
             content: content.trim(),
             type,
             language: type === 'text' ? undefined : language,
+            tags: tags.length > 0 ? tags : undefined,
             createdAt: Date.now(),
             updatedAt: Date.now(),
           });
@@ -129,6 +164,7 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
                   content: content.trim(),
                   type,
                   language: type === 'text' ? undefined : language,
+                  tags: tags.length > 0 ? tags : undefined,
                   updatedAt: Date.now(),
                 }
               : item
@@ -143,6 +179,7 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
             content: content.trim(),
             type,
             language: type === 'text' ? undefined : language,
+            tags: tags.length > 0 ? tags : undefined,
             createdAt: Date.now(),
             updatedAt: Date.now(),
           };
@@ -225,6 +262,14 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
+
+          {/* 标签输入 */}
+          <TagInput
+            tags={tags}
+            onChange={setTags}
+            suggestions={tagSuggestions}
+            placeholder="添加标签（按 Enter 添加）"
+          />
 
           {/* 语言选择（自动推断类型） */}
           <div>

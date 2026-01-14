@@ -1,4 +1,4 @@
-import { FileText, Code, Database, Edit, Trash2, Copy, Check, Pin, PinOff } from 'lucide-react';
+import { FileText, Code, Database, Edit, Trash2, Copy, Check, Pin, PinOff, Tag } from 'lucide-react';
 import type { ContentItem } from '../../types';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
@@ -143,6 +143,21 @@ const ContentItemRow = memo(
               {item.content.length > 200 && '\n...'}
             </code>
           </pre>
+        )}
+
+        {/* 标签显示 */}
+        {item.tags && item.tags.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-1">
+            {item.tags.map((tag, idx) => (
+              <span
+                key={idx}
+                className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-xs"
+              >
+                <Tag size={10} />
+                {tag}
+              </span>
+            ))}
+          </div>
         )}
 
         <div className="mt-3 text-xs text-gray-500">
