@@ -294,7 +294,7 @@ Content Script 接收并插入到 DOM
 ### 3. 快捷键技巧
 
 1. **快速保存工作流**：
-   - 浏览代码 → 选中 → `Ctrl+Shift+S` → 输入标题 → Enter → 完成
+   - 浏览代码 → 选中 → `Alt+Shift+S` → 输入标题 → Enter → 完成
    
 2. **快速插入工作流**：
    - 光标定位 → `Ctrl+Shift+V` → 搜索/选择 → Enter → 完成
