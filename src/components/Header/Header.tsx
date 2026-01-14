@@ -1,6 +1,7 @@
 import { Plus, LogOut, LogIn } from 'lucide-react';
 import type { User } from '../../types';
 import { signOutChromeIdentity, signInWithChromeIdentity } from '../../services/chromeAuth';
+import { getUserAvatar } from '../../utils/avatar';
 
 interface HeaderProps {
   user: User | null;
@@ -65,21 +66,19 @@ export default function Header({ user, onNewContent, showAlert }: HeaderProps) {
         <div className="flex items-center gap-3">
           {user ? (
             <>
-              {user.photoURL && (
-                <img
-                  src={user.photoURL}
-                  alt={user.displayName || '用户'}
-                  className="w-8 h-8 rounded-full"
-                />
-              )}
+              <img
+                src={getUserAvatar(user.uid, user.displayName, user.photoURL, 32)}
+                alt={user.displayName || '用户'}
+                className="w-8 h-8 rounded-full shadow-sm"
+              />
               <div className="text-sm">
-                <div className="font-medium text-gray-900">{user.displayName || '用户'}</div>
+                <div className="font-medium text-gray-900">{user.displayName || user.email || '用户'}</div>
                 <div className="text-gray-500 text-xs">{user.email}</div>
               </div>
             </>
           ) : (
             <div className="flex items-center gap-2 text-sm">
-              <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center shadow-sm">
                 <span className="text-gray-600 font-medium">游</span>
               </div>
               <div>
