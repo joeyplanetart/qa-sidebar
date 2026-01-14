@@ -147,11 +147,11 @@ const ContentItemRow = memo(
 
         {/* 标签显示 */}
         {item.tags && item.tags.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-1">
+          <div className="mt-3 max-h-20 overflow-y-auto flex flex-wrap gap-1 content-start scrollbar-thin">
             {item.tags.map((tag, idx) => (
               <span
                 key={idx}
-                className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-xs"
+                className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-xs flex-shrink-0"
               >
                 <Tag size={10} />
                 {tag}
