@@ -12,6 +12,9 @@ import 'prismjs/components/prism-sql';
 import 'prismjs/components/prism-markup';
 import 'prismjs/components/prism-css';
 import 'prismjs/components/prism-json';
+import 'prismjs/components/prism-bash';
+import 'prismjs/components/prism-yaml';
+import 'prismjs/components/prism-markdown';
 import 'prismjs/themes/prism-tomorrow.css';
 import { sanitizeHtml } from '../../utils/sanitizeHtml';
 
@@ -36,9 +39,12 @@ const languageOptions = [
   { value: 'python', label: 'Python', type: 'code' as ContentType },
   { value: 'java', label: 'Java', type: 'code' as ContentType },
   { value: 'sql', label: 'SQL', type: 'sql' as ContentType },
+  { value: 'bash', label: 'Shell/Bash', type: 'code' as ContentType },
   { value: 'html', label: 'HTML', type: 'code' as ContentType },
   { value: 'css', label: 'CSS', type: 'code' as ContentType },
   { value: 'json', label: 'JSON', type: 'code' as ContentType },
+  { value: 'yaml', label: 'YAML', type: 'code' as ContentType },
+  { value: 'markdown', label: 'Markdown', type: 'code' as ContentType },
   { value: 'plaintext', label: '纯文本', type: 'text' as ContentType },
 ];
 
@@ -79,9 +85,12 @@ export default function QuickSaveDialog({
       python: languages.python,
       java: languages.java,
       sql: languages.sql,
+      bash: languages.bash,
       html: languages.markup,
       css: languages.css,
       json: languages.json,
+      yaml: languages.yaml,
+      markdown: languages.markdown,
     };
     return languageMap[lang] || null;
   };
@@ -152,20 +161,39 @@ export default function QuickSaveDialog({
     text.replace(/\r\n/g, '\n').replace(/\u00a0/g, ' ');
 
   const detectLanguage = (text: string): string => {
-    // 简单的语言检测逻辑
-    if (/^(SELECT|INSERT|UPDATE|DELETE|CREATE|ALTER|DROP)\s/i.test(text)) {
+    const trimmedText = text.trim();
+    
+    // Shell/Bash 检测
+    if (/^#!\s*\/.*\/(ba)?sh/i.test(trimmedText) || // shebang
+        /^(#!/|source\s|export\s|alias\s|echo\s|cd\s|ls\s|mkdir\s|rm\s|cp\s|mv\s|chmod\s|chown\s|sudo\s|apt\s|yum\s|brew\s|npm\s|yarn\s|pip\s|curl\s|wget\s)/i.test(trimmedText)) {
+      return 'bash';
+    }
+    // SQL 检测
+    if (/^(SELECT|INSERT|UPDATE|DELETE|CREATE|ALTER|DROP)\s/i.test(trimmedText)) {
       return 'sql';
     }
-    if (/^(function|const|let|var|class|import|export)\s/i.test(text)) {
+    // JavaScript/TypeScript 检测
+    if (/^(function|const|let|var|class|import|export)\s/i.test(trimmedText)) {
       return 'javascript';
     }
-    if (/^(def|import|from|class|if|for|while)\s/i.test(text)) {
+    // Python 检测
+    if (/^(def\s|import\s|from\s.*import|class\s|if\s__name__|print\()/i.test(trimmedText)) {
       return 'python';
     }
-    if (/^(<!DOCTYPE|<html|<div|<span)/i.test(text)) {
+    // HTML 检测
+    if (/^(<!DOCTYPE|<html|<div|<span|<head|<body)/i.test(trimmedText)) {
       return 'html';
     }
-    if (/^(\{|\[)/.test(text.trim())) {
+    // YAML 检测
+    if (/^[a-zA-Z_][a-zA-Z0-9_]*:\s*$/m.test(trimmedText) || /^---\s*$/m.test(trimmedText)) {
+      return 'yaml';
+    }
+    // Markdown 检测
+    if (/^#{1,6}\s|^\*\*|^-\s\[|^\d+\.\s/m.test(trimmedText)) {
+      return 'markdown';
+    }
+    // JSON 检测
+    if (/^(\{|\[)/.test(trimmedText)) {
       return 'json';
     }
     return 'plaintext';
