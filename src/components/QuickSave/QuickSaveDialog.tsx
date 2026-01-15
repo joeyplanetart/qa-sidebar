@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { X, Save, Wand2 } from 'lucide-react';
 import TagInput from '../TagInput/TagInput';
+import Editor from 'react-simple-code-editor';
 import type { ContentType } from '../../types';
 import { highlight, languages } from 'prismjs';
 import 'prismjs/components/prism-javascript';
@@ -53,8 +54,6 @@ export default function QuickSaveDialog({
   const [language, setLanguage] = useState('plaintext');
   const [tags, setTags] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const previewRef = useRef<HTMLPreElement>(null);
   const sanitizedFormattedHtml = useMemo(
     () => sanitizeHtml(initialFormattedHtml || ''),
     [initialFormattedHtml]
@@ -87,22 +86,22 @@ export default function QuickSaveDialog({
     return languageMap[lang] || null;
   };
 
-  // 生成高亮后的 HTML
-  const getHighlightedCode = () => {
-    if (language === 'plaintext' || !content) {
-      return content;
+  // 代码高亮函数（用于 Editor 组件）
+  const highlightCode = (code: string) => {
+    if (language === 'plaintext' || !code) {
+      return code;
     }
 
     const prismLang = getPrismLanguage(language);
     if (!prismLang) {
-      return content;
+      return code;
     }
 
     try {
-      return highlight(content, prismLang, language);
+      return highlight(code, prismLang, language);
     } catch (e) {
       console.error('Syntax highlighting error:', e);
-      return content;
+      return code;
     }
   };
 
@@ -268,75 +267,64 @@ export default function QuickSaveDialog({
                 内容预览
               </label>
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={formatCode}
-                  className="text-xs text-green-600 hover:text-green-700 flex items-center gap-1"
-                  title="格式化代码（统一缩进）"
-                >
-                  <Wand2 size={12} />
-                  格式化
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsEditing(!isEditing)}
-                  className="text-xs text-blue-600 hover:text-blue-700"
-                >
-                  {isEditing ? '预览模式' : '编辑模式'}
-                </button>
+                {language !== 'plaintext' && (
+                  <button
+                    type="button"
+                    onClick={formatCode}
+                    className="text-xs text-green-600 hover:text-green-700 flex items-center gap-1"
+                    title="格式化代码（统一缩进）"
+                  >
+                    <Wand2 size={12} />
+                    格式化
+                  </button>
+                )}
               </div>
             </div>
 
-            {isEditing ? (
-              /* 编辑模式 - 普通 textarea */
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className="w-full h-48 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none font-mono text-sm bg-white"
-                spellCheck={false}
-                style={{
-                  tabSize: 2,
-                  lineHeight: '1.5',
-                }}
-              />
+            {language === 'plaintext' ? (
+              /* 纯文本模式 */
+              sanitizedFormattedHtml ? (
+                <div 
+                  className="w-full h-48 overflow-auto border border-gray-300 rounded-lg bg-white"
+                >
+                  <div 
+                    className="quick-save-rich-preview px-3 py-2 min-h-full" 
+                    dangerouslySetInnerHTML={{ __html: sanitizedFormattedHtml }} 
+                  />
+                </div>
+              ) : (
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="w-full h-48 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none font-mono text-sm bg-gray-50"
+                  spellCheck={false}
+                  style={{
+                    tabSize: 2,
+                    lineHeight: '1.5',
+                  }}
+                />
+              )
             ) : (
-              /* 预览模式 - 语法高亮 */
-              <div
-                className={`w-full h-48 overflow-auto border border-gray-300 rounded-lg ${
-                  language === 'plaintext' ? 'bg-white' : 'bg-gray-900'
-                }`}
-              >
-                {language === 'plaintext' ? (
-                  sanitizedFormattedHtml ? (
-                    <div className="quick-save-rich-preview px-3 py-2 bg-white min-h-full" dangerouslySetInnerHTML={{ __html: sanitizedFormattedHtml }} />
-                  ) : (
-                    <pre className="px-3 py-2 bg-gray-50 font-mono text-sm whitespace-pre m-0 min-h-full" style={{ lineHeight: '1.5' }}>
-                      {content}
-                    </pre>
-                  )
-                ) : (
-                  <pre 
-                    ref={previewRef}
-                    className="m-0 p-3 min-h-full"
-                    style={{
-                      fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
-                      fontSize: '13px',
-                      lineHeight: '1.6',
-                      whiteSpace: 'pre',
-                      tabSize: 2,
-                    }}
-                  >
-                    <code 
-                      className={`language-${language}`}
-                      style={{
-                        whiteSpace: 'pre',
-                        display: 'inline-block',
-                        minWidth: '100%',
-                      }}
-                      dangerouslySetInnerHTML={{ __html: getHighlightedCode() }}
-                    />
-                  </pre>
-                )}
+              /* 代码模式 - 带语法高亮的编辑器 */
+              <div className="border border-gray-300 rounded-lg overflow-hidden">
+                <Editor
+                  value={content}
+                  onValueChange={setContent}
+                  highlight={highlightCode}
+                  padding={12}
+                  placeholder="请输入代码内容..."
+                  style={{
+                    fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
+                    fontSize: 13,
+                    lineHeight: 1.5,
+                    minHeight: '192px',
+                    maxHeight: '192px',
+                    overflowY: 'auto',
+                    backgroundColor: '#2d2d2d',
+                    color: '#ccc',
+                  }}
+                  textareaClassName="focus:outline-none"
+                />
               </div>
             )}
 
