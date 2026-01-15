@@ -32,39 +32,42 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (!tabId) return;
 
   if (info.menuItemId === 'save-selection' && info.selectionText) {
-    // 打开 side panel 并传递选中的文本/HTML
+    // 必须立即打开 side panel（在用户手势的同步响应中）
     const fallbackText = info.selectionText || '';
+    const sourceUrl = tab?.url;
     
-    // 先尝试从 content script 获取富文本内容
-    chrome.tabs.sendMessage(
-      tabId,
-      { action: 'getSelectedContent' },
-      (response) => {
-        // 处理 content script 未响应的情况（如 chrome:// 页面）
-        const lastError = chrome.runtime.lastError;
-        if (lastError) {
-          console.log('Content script not available:', lastError.message);
-        }
-        
-        const text = response?.text || fallbackText;
-        const formattedHtml = response?.html || '';
-        
-        chrome.sidePanel.open({ tabId }).then(() => {
+    // 立即打开 side panel
+    chrome.sidePanel.open({ tabId }).then(() => {
+      // 打开成功后，尝试从 content script 获取富文本内容
+      chrome.tabs.sendMessage(
+        tabId,
+        { action: 'getSelectedContent' },
+        (response) => {
+          // 处理 content script 未响应的情况（如 chrome:// 页面）
+          const lastError = chrome.runtime.lastError;
+          if (lastError) {
+            console.log('Content script not available:', lastError.message);
+          }
+          
+          const text = response?.text || fallbackText;
+          const formattedHtml = response?.html || '';
+          
+          // 发送消息给 side panel
           setTimeout(() => {
             chrome.runtime.sendMessage({
               type: 'QUICK_SAVE',
               data: {
                 content: text,
                 formattedHtml: formattedHtml || undefined,
-                sourceUrl: tab?.url,
+                sourceUrl,
               },
             });
-          }, 500);
-        }).catch((err) => {
-          console.error('Failed to open side panel:', err);
-        });
-      }
-    );
+          }, 300);
+        }
+      );
+    }).catch((err) => {
+      console.error('Failed to open side panel:', err);
+    });
   } else if (info.menuItemId === 'insert-snippet') {
     // 打开 side panel 并显示片段选择器
     chrome.sidePanel.open({ tabId }).then(() => {
@@ -93,23 +96,34 @@ chrome.runtime.onMessage.addListener(
     if (request.type === 'SAVE_CONTENT') {
       const senderTabId = sender.tab?.id;
       if (senderTabId) {
-        chrome.sidePanel.open({ tabId: senderTabId });
-        setTimeout(() => {
+        chrome.sidePanel.open({ tabId: senderTabId }).then(() => {
+          setTimeout(() => {
+            chrome.runtime.sendMessage({
+              type: 'NEW_CONTENT',
+              data: request.data,
+            });
+          }, 300);
+        }).catch((err) => {
+          // 如果无法打开 side panel，直接发送消息
+          console.log('Could not auto-open side panel:', err);
           chrome.runtime.sendMessage({
             type: 'NEW_CONTENT',
             data: request.data,
           });
-        }, 500);
+        });
       }
       sendResponse({ success: true });
       return true;
     }
 
-    // 处理保存选中文本
+    // 处理保存选中文本（来自 content script 的快捷键）
+    // 注意：这个调用可能会失败，因为不是直接的用户手势响应
+    // 但 Chrome 对快捷键有特殊处理，可能会允许
     if (request.action === 'saveSelectedText') {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         const activeTabId = tabs[0]?.id;
         if (activeTabId) {
+          // 尝试打开 side panel，如果失败则忽略（用户可以手动打开）
           chrome.sidePanel.open({ tabId: activeTabId }).then(() => {
             setTimeout(() => {
               chrome.runtime.sendMessage({
@@ -119,9 +133,17 @@ chrome.runtime.onMessage.addListener(
                   formattedHtml: request.html || undefined,
                 },
               });
-            }, 500);
+            }, 300);
           }).catch((err) => {
-            console.error('Failed to open side panel:', err);
+            // 如果无法打开 side panel，直接发送消息（假设 side panel 已经打开）
+            console.log('Could not auto-open side panel, sending message anyway:', err);
+            chrome.runtime.sendMessage({
+              type: 'QUICK_SAVE',
+              data: {
+                content: request.text,
+                formattedHtml: request.html || undefined,
+              },
+            });
           });
         }
       });
@@ -193,16 +215,18 @@ chrome.commands.onCommand.addListener((command) => {
       });
     } else if (command === 'save-selection') {
       // Alt+Shift+S / Cmd+Shift+D - 保存选中文本
-      chrome.tabs.sendMessage(tabId, { action: 'getSelectedContent' }, (response) => {
-        // 处理 content script 未响应的情况
-        const lastError = chrome.runtime.lastError;
-        if (lastError) {
-          console.log('Content script not available:', lastError.message);
-        }
-        
-        const content = response?.text;
-        if (content) {
-          chrome.sidePanel.open({ tabId }).then(() => {
+      // 必须立即打开 side panel（在用户手势的同步响应中）
+      chrome.sidePanel.open({ tabId }).then(() => {
+        // 打开成功后，获取选中内容
+        chrome.tabs.sendMessage(tabId, { action: 'getSelectedContent' }, (response) => {
+          // 处理 content script 未响应的情况
+          const lastError = chrome.runtime.lastError;
+          if (lastError) {
+            console.log('Content script not available:', lastError.message);
+          }
+          
+          const content = response?.text;
+          if (content) {
             setTimeout(() => {
               chrome.runtime.sendMessage({
                 type: 'QUICK_SAVE',
@@ -211,11 +235,11 @@ chrome.commands.onCommand.addListener((command) => {
                   formattedHtml: response?.html || undefined,
                 },
               });
-            }, 500);
-          }).catch((err) => {
-            console.error('Failed to open side panel:', err);
-          });
-        }
+            }, 300);
+          }
+        });
+      }).catch((err) => {
+        console.error('Failed to open side panel:', err);
       });
     }
   });
