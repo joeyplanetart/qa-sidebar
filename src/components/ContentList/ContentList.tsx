@@ -111,22 +111,22 @@ const ContentItemRow = memo(
     }, [previewContent, language, item.type]);
 
     return (
-      <div className={`bg-white rounded-lg p-4 border ${item.isPinned ? 'border-yellow-400 shadow-md' : 'border-gray-200'} hover:shadow-md transition-shadow`}>
+      <div className={`bg-white dark:bg-gray-800 rounded-lg p-4 border ${item.isPinned ? 'border-yellow-400 shadow-md' : 'border-gray-200 dark:border-gray-700'} hover:shadow-md transition-all`}>
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <Icon size={18} className="text-primary" />
-              <h3 className="font-semibold text-gray-900">{item.title}</h3>
+              <Icon size={18} className="text-primary dark:text-indigo-400" />
+              <h3 className="font-semibold text-gray-900 dark:text-white">{item.title}</h3>
               {item.isPinned && (
                 <Pin size={14} className="text-yellow-600 fill-yellow-600" />
               )}
             </div>
             <div className="flex items-center gap-2 ml-6">
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800">
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200">
                 {typeLabels[item.type]}
               </span>
               {item.language && item.type !== 'text' && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
                   {languageLabels[item.language] || item.language}
                 </span>
               )}
@@ -137,8 +137,8 @@ const ContentItemRow = memo(
               onClick={() => onTogglePin(item.id)}
               className={`p-1.5 rounded transition-colors ${
                 item.isPinned
-                  ? 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50'
-                  : 'text-gray-500 hover:text-yellow-600 hover:bg-yellow-50'
+                  ? 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-900'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900'
               }`}
               title={item.isPinned ? '取消置顶' : '置顶'}
             >
@@ -146,7 +146,7 @@ const ContentItemRow = memo(
             </button>
             <button
               onClick={() => onCopy(item)}
-              className="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
+              className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900 rounded transition-colors"
               title="复制内容"
             >
               {copiedId === item.id ? (
@@ -157,14 +157,14 @@ const ContentItemRow = memo(
             </button>
             <button
               onClick={() => onEdit(item.id)}
-              className="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 rounded transition-colors"
+              className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
               title="编辑"
             >
               <Edit size={16} />
             </button>
             <button
               onClick={() => onDelete(item.id)}
-              className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+              className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900 rounded transition-colors"
               title="删除"
             >
               <Trash2 size={16} />
@@ -175,17 +175,17 @@ const ContentItemRow = memo(
         {item.type === 'text' ? (
           sanitizedFormattedHtml ? (
             <div
-              className="quick-save-rich-preview text-sm bg-white border border-gray-200 p-3 rounded max-h-32 overflow-hidden"
+              className="quick-save-rich-preview text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-3 rounded max-h-32 overflow-hidden"
               dangerouslySetInnerHTML={{ __html: sanitizedFormattedHtml }}
             />
           ) : (
-            <div className="text-sm text-gray-700 bg-gray-50 p-3 rounded">
+            <div className="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 p-3 rounded">
               {previewContent}
               {item.content.length > 200 && '...'}
             </div>
           )
         ) : (
-          <pre className="text-sm bg-gray-900 rounded overflow-x-auto p-3">
+          <pre className="text-sm bg-gray-900 dark:bg-gray-950 rounded overflow-x-auto p-3">
             {highlightedCode ? (
               <code 
                 className={`language-${language}`}
@@ -208,7 +208,7 @@ const ContentItemRow = memo(
             {item.tags.map((tag, idx) => (
               <span
                 key={idx}
-                className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-xs flex-shrink-0"
+                className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-200 rounded text-xs flex-shrink-0"
               >
                 <Tag size={10} />
                 {tag}
@@ -217,7 +217,7 @@ const ContentItemRow = memo(
           </div>
         )}
 
-        <div className="mt-3 text-xs text-gray-500">
+        <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
           创建于 {new Date(item.createdAt).toLocaleString('zh-CN')}
         </div>
       </div>
@@ -244,14 +244,14 @@ export default function ContentList({ contents, loading, onEdit, onDelete, onTog
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-gray-500">加载中...</div>
+        <div className="text-gray-500 dark:text-gray-400">加载中...</div>
       </div>
     );
   }
 
   if (contents.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+      <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
         <FileText size={48} className="mb-4 opacity-50" />
         <p>暂无内容</p>
         <p className="text-sm mt-1">点击"新建"按钮添加第一个内容</p>

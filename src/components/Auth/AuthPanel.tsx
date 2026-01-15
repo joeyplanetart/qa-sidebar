@@ -116,17 +116,17 @@ export default function AuthPanel({ onSkipLogin, showAlert }: AuthPanelProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full mx-4">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 max-w-md w-full mx-4 transition-colors">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-primary mb-2">QA SidePanel</h1>
-        <p className="text-gray-600">专为QA打造的侧边栏笔记工具！</p>
+        <h1 className="text-3xl font-bold text-primary dark:text-indigo-400 mb-2">QA SidePanel</h1>
+        <p className="text-gray-600 dark:text-gray-400">专为QA打造的侧边栏笔记工具！</p>
       </div>
 
       <div className="space-y-4">
         {/* Email 登录/注册表单 */}
         <form onSubmit={handleEmailAuth} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               邮箱
             </label>
             <input
@@ -135,14 +135,14 @@ export default function AuthPanel({ onSkipLogin, showAlert }: AuthPanelProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-indigo-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors placeholder:text-gray-400 dark:placeholder:text-gray-500"
               placeholder="请输入邮箱"
               autoComplete="email"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               密码
             </label>
             <input
@@ -151,7 +151,7 @@ export default function AuthPanel({ onSkipLogin, showAlert }: AuthPanelProps) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-indigo-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors placeholder:text-gray-400 dark:placeholder:text-gray-500"
               placeholder="至少 6 位密码"
               autoComplete={isSignUp ? "new-password" : "current-password"}
             />
@@ -159,7 +159,7 @@ export default function AuthPanel({ onSkipLogin, showAlert }: AuthPanelProps) {
 
           {isSignUp && (
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 确认密码
               </label>
               <input
@@ -168,7 +168,7 @@ export default function AuthPanel({ onSkipLogin, showAlert }: AuthPanelProps) {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 disabled={loading}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-indigo-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 placeholder="再次输入密码"
                 autoComplete="new-password"
               />
@@ -178,7 +178,7 @@ export default function AuthPanel({ onSkipLogin, showAlert }: AuthPanelProps) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className="w-full px-6 py-3 bg-blue-600 dark:bg-indigo-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           >
             {loading ? (isSignUp ? '注册中...' : '登录中...') : (isSignUp ? '注册' : '登录')}
           </button>
@@ -193,7 +193,7 @@ export default function AuthPanel({ onSkipLogin, showAlert }: AuthPanelProps) {
               setConfirmPassword('');
             }}
             disabled={loading}
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-blue-600 dark:text-indigo-400 hover:text-blue-700 dark:hover:text-indigo-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSignUp ? '已有账号？点击登录' : '没有账号？点击注册'}
           </button>
@@ -202,10 +202,10 @@ export default function AuthPanel({ onSkipLogin, showAlert }: AuthPanelProps) {
         {/* 分隔线 */}
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
+            <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">或</span>
+            <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">或</span>
           </div>
         </div>
 
@@ -214,7 +214,7 @@ export default function AuthPanel({ onSkipLogin, showAlert }: AuthPanelProps) {
           <button
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-3 px-6 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -234,7 +234,7 @@ export default function AuthPanel({ onSkipLogin, showAlert }: AuthPanelProps) {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            <span className="font-medium text-gray-700">
+            <span className="font-medium text-gray-700 dark:text-gray-300">
               {loading ? '登录中...' : '使用 Google 账号登录'}
             </span>
           </button>
@@ -243,12 +243,12 @@ export default function AuthPanel({ onSkipLogin, showAlert }: AuthPanelProps) {
         <button
           onClick={onSkipLogin}
           disabled={loading}
-          className="w-full px-6 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span className="font-medium">稍后登录（使用本地存储）</span>
         </button>
 
-        <div className="text-center text-sm text-gray-500 space-y-1">
+        <div className="text-center text-sm text-gray-500 dark:text-gray-400 space-y-1">
           <p>登录后即可保存和同步您的内容</p>
           <p className="text-xs">未登录时数据仅保存在本地浏览器</p>
         </div>

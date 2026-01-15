@@ -17,6 +17,7 @@ import 'prismjs/components/prism-yaml';
 import 'prismjs/components/prism-markdown';
 import 'prismjs/themes/prism-tomorrow.css';
 import { sanitizeHtml } from '../../utils/sanitizeHtml';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface QuickSaveDialogProps {
   initialContent: string;
@@ -60,6 +61,7 @@ export default function QuickSaveDialog({
   const [language, setLanguage] = useState('plaintext');
   const [tags, setTags] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const { resolvedTheme } = useTheme();
   const sanitizedFormattedHtml = useMemo(
     () => sanitizeHtml(initialFormattedHtml || ''),
     [initialFormattedHtml]
@@ -221,16 +223,16 @@ export default function QuickSaveDialog({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] flex flex-col">
+      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl max-h-[90vh] flex flex-col transition-colors">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
-            <Save size={20} className="text-primary" />
-            <h2 className="text-lg font-semibold">快速保存片段</h2>
+            <Save size={20} className="text-primary dark:text-indigo-400" />
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">快速保存片段</h2>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 p-1 rounded transition-colors"
+            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 p-1 rounded transition-colors"
           >
             <X size={20} />
           </button>
@@ -240,7 +242,7 @@ export default function QuickSaveDialog({
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* 标题 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               标题 <span className="text-red-500">*</span>
             </label>
             <input
@@ -248,20 +250,20 @@ export default function QuickSaveDialog({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="给这个片段起个名字"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-indigo-500 transition-colors placeholder:text-gray-400 dark:placeholder:text-gray-500"
               autoFocus
             />
           </div>
 
           {/* 语言类型 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               语言类型
             </label>
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-indigo-500 transition-colors"
             >
               {languageOptions.map((lang) => (
                 <option key={lang.value} value={lang.value}>
@@ -282,7 +284,7 @@ export default function QuickSaveDialog({
           {/* 内容预览 */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 内容预览
               </label>
             </div>
@@ -291,7 +293,7 @@ export default function QuickSaveDialog({
               /* 纯文本模式 */
               sanitizedFormattedHtml ? (
                 <div 
-                  className="w-full h-48 overflow-auto border border-gray-300 rounded-lg bg-white"
+                  className="w-full h-48 overflow-auto border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900"
                 >
                   <div 
                     className="quick-save-rich-preview px-3 py-2 min-h-full" 
@@ -302,7 +304,7 @@ export default function QuickSaveDialog({
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className="w-full h-48 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none font-mono text-sm bg-gray-50"
+                  className="w-full h-48 px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-indigo-500 resize-none font-mono text-sm transition-colors placeholder:text-gray-400 dark:placeholder:text-gray-500"
                   spellCheck={false}
                   style={{
                     tabSize: 2,
@@ -312,7 +314,7 @@ export default function QuickSaveDialog({
               )
             ) : (
               /* 代码模式 - 带语法高亮的编辑器 */
-              <div className="border border-gray-300 rounded-lg overflow-hidden">
+              <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
                 <Editor
                   value={content}
                   onValueChange={setContent}
@@ -326,33 +328,33 @@ export default function QuickSaveDialog({
                     minHeight: '192px',
                     maxHeight: '192px',
                     overflowY: 'auto',
-                    backgroundColor: '#2d2d2d',
-                    color: '#ccc',
+                    backgroundColor: resolvedTheme === 'dark' ? '#1e1e1e' : '#2d2d2d',
+                    color: resolvedTheme === 'dark' ? '#d4d4d4' : '#ccc',
                   }}
                   textareaClassName="focus:outline-none"
                 />
               </div>
             )}
 
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               {content.length} 字符 · {language === 'plaintext' ? '纯文本' : languageOptions.find(l => l.value === language)?.label}
             </p>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 p-4 border-t">
+        <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
           <button
             onClick={onClose}
             disabled={saving}
-            className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
           >
             取消
           </button>
           <button
             onClick={handleSave}
             disabled={saving || !title.trim()}
-            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+            className="px-4 py-2 bg-primary dark:bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2"
           >
             <Save size={16} />
             {saving ? '保存中...' : '保存'}

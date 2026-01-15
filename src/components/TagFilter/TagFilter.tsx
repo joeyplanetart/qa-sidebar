@@ -34,12 +34,12 @@ export default function TagFilter({
       {/* 已选择的标签 */}
       {selectedTags.length > 0 && (
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm text-gray-600 font-medium">筛选:</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">筛选:</span>
           {selectedTags.map((tag) => (
             <button
               key={tag}
               onClick={() => onTagRemove(tag)}
-              className="inline-flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center gap-1 px-2 py-1 bg-blue-600 dark:bg-blue-700 text-white rounded text-sm hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors"
             >
               <Tag size={12} />
               {tag}
@@ -48,7 +48,7 @@ export default function TagFilter({
           ))}
           <button
             onClick={onClearAll}
-            className="text-xs text-gray-500 hover:text-gray-700 underline"
+            className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 underline"
           >
             清除全部
           </button>
@@ -63,13 +63,13 @@ export default function TagFilter({
               isExpanded ? 'max-h-48 overflow-y-auto scrollbar-thin pr-2' : ''
             }`}
           >
-            <span className="text-sm text-gray-500 flex-shrink-0 pt-1">标签:</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400 flex-shrink-0 pt-1">标签:</span>
             <div className="flex flex-wrap gap-2 flex-1">
               {displayTags.map((tag) => (
                 <button
                   key={tag}
                   onClick={() => onTagSelect(tag)}
-                  className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200 transition-colors flex-shrink-0"
+                  className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex-shrink-0"
                 >
                   <Tag size={12} />
                   {tag}
@@ -82,7 +82,7 @@ export default function TagFilter({
           {hasMoreTags && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+              className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors"
             >
               {isExpanded ? (
                 <>

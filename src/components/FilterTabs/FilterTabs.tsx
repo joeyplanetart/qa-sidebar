@@ -21,8 +21,8 @@ export default function FilterTabs({ active, onChange }: FilterTabsProps) {
           onClick={() => onChange(tab.id)}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
             active === tab.id
-              ? 'bg-primary text-white'
-              : 'bg-white text-gray-600 hover:bg-gray-100'
+              ? 'bg-primary dark:bg-indigo-600 text-white'
+              : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
           }`}
         >
           {tab.label}

@@ -18,6 +18,7 @@ import type { ContentType, ContentItem } from '../../types';
 import { getContentById, createContent, updateContent, getContents } from '../../services/supabase';
 import { getFromLocalStorage, saveToLocalStorage } from '../../services/storage';
 import TagInput from '../TagInput/TagInput';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface EditorModalProps {
   contentId: string | null;
@@ -51,6 +52,7 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
   const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(!!contentId);
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     if (contentId) {
@@ -233,8 +235,8 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
   if (initialLoading) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6">
-          <div className="text-gray-600">加载中...</div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6">
+          <div className="text-gray-600 dark:text-gray-300">加载中...</div>
         </div>
       </div>
     );
@@ -242,15 +244,15 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col">
+      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col transition-colors">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-xl font-semibold">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             {contentId ? '编辑内容' : '新建内容'}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 p-1 rounded transition-colors"
+            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 p-1 rounded transition-colors"
           >
             <X size={24} />
           </button>
@@ -260,7 +262,7 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* 标题 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               标题
             </label>
             <input
@@ -268,7 +270,7 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="请输入标题"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-indigo-500 transition-colors placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
           </div>
 
@@ -282,9 +284,9 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
 
           {/* 语言选择（自动推断类型） */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               语言
-              <span className="ml-2 text-xs text-gray-500">
+              <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
                 (类型将自动设置)
               </span>
             </label>
@@ -302,7 +304,7 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
                   setType('code');
                 }
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-indigo-500 transition-colors"
             >
               {languageOptions.map((lang) => (
                 <option key={lang.value} value={lang.value}>
@@ -314,10 +316,10 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
 
           {/* 编辑器 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               内容
               {type !== 'text' && (
-                <span className="ml-2 text-xs text-gray-500">
+                <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
                   ({languageOptions.find(l => l.value === language)?.label})
                 </span>
               )}
@@ -327,14 +329,14 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="请输入文本内容"
-                className="w-full h-96 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none font-mono text-sm"
+                className="w-full h-96 px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-indigo-500 resize-none font-mono text-sm transition-colors placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 style={{
                   tabSize: 2,
                   lineHeight: '1.6',
                 }}
               />
             ) : (
-              <div className="border border-gray-300 rounded-lg overflow-hidden">
+              <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
                 <Editor
                   value={content}
                   onValueChange={setContent}
@@ -348,32 +350,32 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
                     minHeight: '384px',
                     maxHeight: '384px',
                     overflowY: 'auto',
-                    backgroundColor: '#2d2d2d',
-                    color: '#ccc',
+                    backgroundColor: resolvedTheme === 'dark' ? '#1e1e1e' : '#2d2d2d',
+                    color: resolvedTheme === 'dark' ? '#d4d4d4' : '#ccc',
                   }}
                   textareaClassName="focus:outline-none"
                 />
               </div>
             )}
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               💡 提示：按 Tab 键插入缩进，支持语法高亮
             </p>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 p-4 border-t">
+        <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
           <button
             onClick={onClose}
             disabled={loading}
-            className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
           >
             取消
           </button>
           <button
             onClick={handleSave}
             disabled={loading}
-            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+            className="px-4 py-2 bg-primary dark:bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-700 transition-colors disabled:opacity-50"
           >
             {loading ? '保存中...' : '保存'}
           </button>

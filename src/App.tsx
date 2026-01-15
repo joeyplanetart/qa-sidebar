@@ -296,8 +296,8 @@ function App() {
 
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-gray-600">加载中...</div>
+      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-950 transition-colors">
+        <div className="text-gray-600 dark:text-gray-400">加载中...</div>
       </div>
     );
   }
@@ -305,7 +305,7 @@ function App() {
   // 显示登录选择页（仅在没有用户、没有本地模式、且应该显示的情况下）
   if (!user && !useLocalMode && showAuthPanel) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-50">
+      <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 transition-colors">
         <AuthPanel onSkipLogin={handleSkipLogin} showAlert={dialog.showAlert} />
         <Dialog
           isOpen={dialog.isOpen}
@@ -320,7 +320,7 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-950 transition-colors">
       <Header user={user} onNewContent={handleNewContent} showAlert={dialog.showAlert} />
       
       <div className="flex-1 flex flex-col overflow-hidden">
