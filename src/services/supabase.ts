@@ -206,4 +206,34 @@ export const getContents = async (userId: string): Promise<ContentItem[]> => {
   }
 };
 
+// 增加使用计数
+export const incrementUseCount = async (id: string) => {
+  try {
+    // 获取当前项
+    const { data: item, error: fetchError } = await supabase
+      .from(CONTENTS_TABLE)
+      .select('useCount')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const currentCount = item?.useCount || 0;
+    
+    // 更新计数和最后使用时间
+    const { error: updateError } = await supabase
+      .from(CONTENTS_TABLE)
+      .update({ 
+        useCount: currentCount + 1,
+        lastUsedAt: Date.now()
+      })
+      .eq('id', id);
+
+    if (updateError) throw updateError;
+  } catch (error) {
+    console.error('增加使用计数失败:', error);
+    throw error;
+  }
+};
+
 export { supabase as db };

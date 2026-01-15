@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getContents, deleteContent as deleteContentFromSupabase, togglePinContent as togglePinInSupabase } from '../services/supabase';
+import { getContents, deleteContent as deleteContentFromSupabase, togglePinContent as togglePinInSupabase, incrementUseCount as incrementUseCountInSupabase } from '../services/supabase';
 import { getFromLocalStorage, saveToLocalStorage } from '../services/storage';
 import type { ContentItem } from '../types';
 
@@ -78,5 +78,42 @@ export const useContents = (userId: string | undefined) => {
     loadContents();
   };
 
-  return { contents, loading, deleteContent, togglePin, refresh };
+  const incrementUseCount = async (id: string) => {
+    try {
+      if (userId) {
+        // 使用 Supabase
+        await incrementUseCountInSupabase(id);
+      } else {
+        // 使用本地存储
+        const updatedContents = contents.map((c) =>
+          c.id === id
+            ? {
+                ...c,
+                useCount: (c.useCount || 0) + 1,
+                lastUsedAt: Date.now(),
+              }
+            : c
+        );
+        await saveToLocalStorage(updatedContents);
+      }
+
+      // 更新本地状态
+      setContents((prev) =>
+        prev.map((c) =>
+          c.id === id
+            ? {
+                ...c,
+                useCount: (c.useCount || 0) + 1,
+                lastUsedAt: Date.now(),
+              }
+            : c
+        )
+      );
+    } catch (error) {
+      console.error('增加使用计数失败:', error);
+      // 不抛出错误，允许插入操作继续
+    }
+  };
+
+  return { contents, loading, deleteContent, togglePin, refresh, incrementUseCount };
 };

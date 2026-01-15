@@ -1,4 +1,4 @@
-import { Plus, LogOut, LogIn } from 'lucide-react';
+import { Plus, LogOut, LogIn, BarChart3 } from 'lucide-react';
 import type { User } from '../../types';
 import { signOutChromeIdentity, signInWithChromeIdentity } from '../../services/chromeAuth';
 import { getUserAvatar } from '../../utils/avatar';
@@ -7,10 +7,11 @@ import ThemeToggle from '../ThemeToggle/ThemeToggle';
 interface HeaderProps {
   user: User | null;
   onNewContent: () => void;
+  onShowStatistics?: () => void;
   showAlert?: (message: string, title?: string) => Promise<boolean>;
 }
 
-export default function Header({ user, onNewContent, showAlert }: HeaderProps) {
+export default function Header({ user, onNewContent, onShowStatistics, showAlert }: HeaderProps) {
   const handleSignOut = async () => {
     try {
       await signOutChromeIdentity();
@@ -51,11 +52,19 @@ export default function Header({ user, onNewContent, showAlert }: HeaderProps) {
         <div>
           <h1 className="text-2xl font-bold text-primary dark:text-indigo-400"></h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {user ? '保存并同步您的代码片段' : '本地模式：数据仅保存在浏览器'}
+            {user ? '保存并同步您的代码片段' : '本地模式'}
           </p>
         </div>
         <div className="flex items-center gap-3">
           <ThemeToggle />
+          <button
+            onClick={onShowStatistics}
+            className="text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            title="数据统计"
+          >
+            <BarChart3 size={20} />
+            <span className="text-sm">统计</span>
+          </button>
           <button
             onClick={onNewContent}
             className="bg-primary hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"

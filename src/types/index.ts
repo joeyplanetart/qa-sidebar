@@ -11,6 +11,8 @@ export interface ContentItem {
   tags?: string[];
   variables?: string[]; // 代码片段中的变量/占位符列表
   isPinned?: boolean;
+  useCount?: number; // 使用次数统计
+  lastUsedAt?: number; // 最后使用时间
   createdAt: number;
   updatedAt: number;
 }

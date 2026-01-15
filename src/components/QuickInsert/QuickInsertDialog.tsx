@@ -6,7 +6,7 @@ import { replaceVariables } from '../../utils/variables';
 
 interface QuickInsertDialogProps {
   contents: ContentItem[];
-  onInsert: (content: string) => void;
+  onInsert: (content: string, contentId: string) => void;
   onClose: () => void;
 }
 
@@ -50,7 +50,7 @@ export default function QuickInsertDialog({
         setShowVariableForm(true);
       } else {
         // 直接插入
-        onInsert(selectedContent.content);
+        onInsert(selectedContent.content, selectedContent.id);
         onClose();
       }
     }
@@ -60,7 +60,7 @@ export default function QuickInsertDialog({
     if (selectedContent) {
       // 替换变量后插入
       const replacedContent = replaceVariables(selectedContent.content, values);
-      onInsert(replacedContent);
+      onInsert(replacedContent, selectedContent.id);
       onClose();
     }
   };

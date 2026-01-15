@@ -9,6 +9,7 @@ import AuthPanel from './components/Auth/AuthPanel';
 import Dialog from './components/Dialog/Dialog';
 import QuickSaveDialog from './components/QuickSave/QuickSaveDialog';
 import QuickInsertDialog from './components/QuickInsert/QuickInsertDialog';
+import StatisticsModal from './components/Statistics/StatisticsModal';
 import { useAuth } from './hooks/useAuth';
 import { useContents } from './hooks/useContents';
 import { useDialog } from './hooks/useDialog';
@@ -36,12 +37,13 @@ function App() {
     formattedHtml?: string;
   } | null>(null);
   const [showInsertDialog, setShowInsertDialog] = useState(false);
+  const [showStatistics, setShowStatistics] = useState(false);
   
   const dialog = useDialog();
   
   const { user, loading: authLoading } = useAuth();
   // 使用本地模式时传入 undefined，使用 Supabase 时传入用户 ID
-  const { contents, loading: contentsLoading, deleteContent, togglePin, refresh } = useContents(
+  const { contents, loading: contentsLoading, deleteContent, togglePin, refresh, incrementUseCount } = useContents(
     useLocalMode ? undefined : user?.uid
   );
 
@@ -278,7 +280,7 @@ function App() {
   };
 
   // 处理插入片段
-  const handleInsertSnippet = async (content: string) => {
+  const handleInsertSnippet = async (content: string, contentId: string) => {
     try {
       const response = await chrome.runtime.sendMessage({
         action: 'insertToPage',
@@ -286,6 +288,8 @@ function App() {
       });
 
       if (response?.success) {
+        // 增加使用计数
+        await incrementUseCount(contentId);
         setShowInsertDialog(false);
         await dialog.showAlert('片段已插入到页面！', '成功');
       }
@@ -322,7 +326,12 @@ function App() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-950 transition-colors">
-      <Header user={user} onNewContent={handleNewContent} showAlert={dialog.showAlert} />
+      <Header 
+        user={user} 
+        onNewContent={handleNewContent} 
+        onShowStatistics={() => setShowStatistics(true)}
+        showAlert={dialog.showAlert} 
+      />
       
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="p-4 space-y-4">
@@ -374,6 +383,14 @@ function App() {
           contents={contents}
           onInsert={handleInsertSnippet}
           onClose={() => setShowInsertDialog(false)}
+        />
+      )}
+
+      {showStatistics && (
+        <StatisticsModal
+          contents={contents}
+          filteredContents={filteredContents}
+          onClose={() => setShowStatistics(false)}
         />
       )}
 
