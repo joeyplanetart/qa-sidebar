@@ -38,14 +38,14 @@ export default function StatisticsModal({ contents, filteredContents, onClose }:
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end items-center p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+        {/* <div className="flex justify-end items-center p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
           <button
             onClick={onClose}
             className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             关闭
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );
