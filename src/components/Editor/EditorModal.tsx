@@ -20,6 +20,7 @@ import { getFromLocalStorage, saveToLocalStorage } from '../../services/storage'
 import TagInput from '../TagInput/TagInput';
 import { useTheme } from '../../contexts/ThemeContext';
 import { extractVariables } from '../../utils/variables';
+import { LANGUAGE_OPTIONS, getTypeByLanguage } from '../../constants/languages';
 
 interface EditorModalProps {
   contentId: string | null;
@@ -28,21 +29,6 @@ interface EditorModalProps {
   onSave: () => void;
   showAlert: (message: string, title?: string) => Promise<boolean>;
 }
-
-const languageOptions = [
-  { value: 'javascript', label: 'JavaScript' },
-  { value: 'typescript', label: 'TypeScript' },
-  { value: 'python', label: 'Python' },
-  { value: 'java', label: 'Java' },
-  { value: 'sql', label: 'SQL' },
-  { value: 'bash', label: 'Shell/Bash' },
-  { value: 'html', label: 'HTML' },
-  { value: 'css', label: 'CSS' },
-  { value: 'json', label: 'JSON' },
-  { value: 'yaml', label: 'YAML' },
-  { value: 'markdown', label: 'Markdown' },
-  { value: 'plaintext', label: '纯文本' },
-];
 
 export default function EditorModal({ contentId, userId, onClose, onSave, showAlert }: EditorModalProps) {
   const [title, setTitle] = useState('');
@@ -304,17 +290,11 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
                 const newLanguage = e.target.value;
                 setLanguage(newLanguage);
                 // 根据语言自动推断类型
-                if (newLanguage === 'sql') {
-                  setType('sql');
-                } else if (newLanguage === 'plaintext') {
-                  setType('text');
-                } else {
-                  setType('code');
-                }
+                setType(getTypeByLanguage(newLanguage));
               }}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-indigo-500 transition-colors"
             >
-              {languageOptions.map((lang) => (
+              {LANGUAGE_OPTIONS.map((lang) => (
                 <option key={lang.value} value={lang.value}>
                   {lang.label}
                 </option>
@@ -329,7 +309,7 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
                 内容
                 {type !== 'text' && (
                   <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
-                    ({languageOptions.find(l => l.value === language)?.label})
+                    ({LANGUAGE_OPTIONS.find(l => l.value === language)?.label})
                   </span>
                 )}
               </label>

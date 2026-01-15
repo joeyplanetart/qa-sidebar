@@ -19,6 +19,7 @@ import 'prismjs/themes/prism-tomorrow.css';
 import { sanitizeHtml } from '../../utils/sanitizeHtml';
 import { useTheme } from '../../contexts/ThemeContext';
 import { extractVariables } from '../../utils/variables';
+import { LANGUAGE_OPTIONS, getTypeByLanguage } from '../../constants/languages';
 
 interface QuickSaveDialogProps {
   initialContent: string;
@@ -35,21 +36,6 @@ interface QuickSaveDialogProps {
   onClose: () => void;
   tagSuggestions?: string[];
 }
-
-const languageOptions = [
-  { value: 'javascript', label: 'JavaScript', type: 'code' as ContentType },
-  { value: 'typescript', label: 'TypeScript', type: 'code' as ContentType },
-  { value: 'python', label: 'Python', type: 'code' as ContentType },
-  { value: 'java', label: 'Java', type: 'code' as ContentType },
-  { value: 'sql', label: 'SQL', type: 'sql' as ContentType },
-  { value: 'bash', label: 'Shell/Bash', type: 'code' as ContentType },
-  { value: 'html', label: 'HTML', type: 'code' as ContentType },
-  { value: 'css', label: 'CSS', type: 'code' as ContentType },
-  { value: 'json', label: 'JSON', type: 'code' as ContentType },
-  { value: 'yaml', label: 'YAML', type: 'code' as ContentType },
-  { value: 'markdown', label: 'Markdown', type: 'code' as ContentType },
-  { value: 'plaintext', label: '纯文本', type: 'text' as ContentType },
-];
 
 export default function QuickSaveDialog({
   initialContent,
@@ -205,12 +191,12 @@ export default function QuickSaveDialog({
 
     setSaving(true);
     try {
-      const selectedLang = languageOptions.find(l => l.value === language);
+      const contentType = getTypeByLanguage(language);
       onSave({
         title: title.trim(),
         content: content.trim(),
-        type: selectedLang?.type || 'text',
-        language: selectedLang?.type === 'text' ? undefined : language,
+        type: contentType,
+        language: contentType === 'text' ? undefined : language,
         formattedHtml:
           language === 'plaintext' && sanitizedFormattedHtml
             ? sanitizedFormattedHtml
@@ -271,7 +257,7 @@ export default function QuickSaveDialog({
               onChange={(e) => setLanguage(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-indigo-500 transition-colors"
             >
-              {languageOptions.map((lang) => (
+              {LANGUAGE_OPTIONS.map((lang) => (
                 <option key={lang.value} value={lang.value}>
                   {lang.label}
                 </option>
@@ -349,7 +335,7 @@ export default function QuickSaveDialog({
             )}
 
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              {content.length} 字符 · {language === 'plaintext' ? '纯文本' : languageOptions.find(l => l.value === language)?.label}
+              {content.length} 字符 · {language === 'plaintext' ? '纯文本' : LANGUAGE_OPTIONS.find(l => l.value === language)?.label}
               {variables.length > 0 && (
                 <span className="ml-2 text-indigo-600 dark:text-indigo-400">
                   · 包含变量: {variables.map(v => `\${${v}}`).join(', ')}
