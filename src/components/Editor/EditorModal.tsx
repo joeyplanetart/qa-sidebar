@@ -10,6 +10,9 @@ import 'prismjs/components/prism-sql';
 import 'prismjs/components/prism-markup';
 import 'prismjs/components/prism-css';
 import 'prismjs/components/prism-json';
+import 'prismjs/components/prism-bash';
+import 'prismjs/components/prism-yaml';
+import 'prismjs/components/prism-markdown';
 import 'prismjs/themes/prism-tomorrow.css';
 import type { ContentType, ContentItem } from '../../types';
 import { getContentById, createContent, updateContent, getContents } from '../../services/supabase';
@@ -30,9 +33,12 @@ const languageOptions = [
   { value: 'python', label: 'Python' },
   { value: 'java', label: 'Java' },
   { value: 'sql', label: 'SQL' },
+  { value: 'bash', label: 'Shell/Bash' },
   { value: 'html', label: 'HTML' },
   { value: 'css', label: 'CSS' },
   { value: 'json', label: 'JSON' },
+  { value: 'yaml', label: 'YAML' },
+  { value: 'markdown', label: 'Markdown' },
   { value: 'plaintext', label: '纯文本' },
 ];
 
@@ -204,9 +210,12 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
       python: languages.python,
       java: languages.java,
       sql: languages.sql,
+      bash: languages.bash,
       html: languages.markup,
       css: languages.css,
       json: languages.json,
+      yaml: languages.yaml,
+      markdown: languages.markdown,
       plaintext: languages.plaintext,
     };
     return languageMap[lang] || languages.plaintext;

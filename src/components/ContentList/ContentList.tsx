@@ -8,6 +8,11 @@ import 'prismjs/components/prism-python';
 import 'prismjs/components/prism-sql';
 import 'prismjs/components/prism-java';
 import 'prismjs/components/prism-css';
+import 'prismjs/components/prism-json';
+import 'prismjs/components/prism-bash';
+import 'prismjs/components/prism-yaml';
+import 'prismjs/components/prism-markdown';
+import 'prismjs/components/prism-markup';
 import { useEffect, useState, memo } from 'react';
 import { Virtuoso } from 'react-virtuoso';
 import { sanitizeHtml } from '../../utils/sanitizeHtml';
@@ -39,9 +44,12 @@ const languageLabels: Record<string, string> = {
   python: 'Python',
   java: 'Java',
   sql: 'SQL',
+  bash: 'Shell/Bash',
   html: 'HTML',
   css: 'CSS',
   json: 'JSON',
+  yaml: 'YAML',
+  markdown: 'Markdown',
   plaintext: '纯文本',
 };
 
