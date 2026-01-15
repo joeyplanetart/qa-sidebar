@@ -1,6 +1,6 @@
 import { FileText, Code, Database, Edit, Trash2, Copy, Check, Pin, PinOff, Tag } from 'lucide-react';
 import type { ContentItem } from '../../types';
-import Prism from 'prismjs';
+import { highlight, languages } from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-typescript';
@@ -13,7 +13,7 @@ import 'prismjs/components/prism-bash';
 import 'prismjs/components/prism-yaml';
 import 'prismjs/components/prism-markdown';
 import 'prismjs/components/prism-markup';
-import { useEffect, useState, memo } from 'react';
+import { useState, memo, useMemo } from 'react';
 import { Virtuoso } from 'react-virtuoso';
 import { sanitizeHtml } from '../../utils/sanitizeHtml';
 
@@ -77,9 +77,38 @@ const ContentItemRow = memo(
       : '';
     const language = item.language || (item.type === 'sql' ? 'sql' : 'text');
 
-    useEffect(() => {
-      Prism.highlightAll();
-    }, [item.content]);
+    // 获取 Prism 语言对象
+    const getPrismLanguage = (lang: string) => {
+      const languageMap: Record<string, any> = {
+        javascript: languages.javascript,
+        typescript: languages.typescript,
+        python: languages.python,
+        java: languages.java,
+        sql: languages.sql,
+        bash: languages.bash,
+        html: languages.markup,
+        css: languages.css,
+        json: languages.json,
+        yaml: languages.yaml,
+        markdown: languages.markdown,
+      };
+      return languageMap[lang] || null;
+    };
+
+    // 使用 useMemo 缓存高亮结果，避免每次渲染都重新高亮
+    const highlightedCode = useMemo(() => {
+      if (item.type === 'text') return null;
+      
+      const prismLang = getPrismLanguage(language);
+      if (!prismLang) return null;
+
+      try {
+        return highlight(previewContent, prismLang, language);
+      } catch (e) {
+        console.error('Syntax highlighting error:', e);
+        return null;
+      }
+    }, [previewContent, language, item.type]);
 
     return (
       <div className={`bg-white rounded-lg p-4 border ${item.isPinned ? 'border-yellow-400 shadow-md' : 'border-gray-200'} hover:shadow-md transition-shadow`}>
@@ -156,11 +185,20 @@ const ContentItemRow = memo(
             </div>
           )
         ) : (
-          <pre className="text-sm bg-gray-900 rounded overflow-x-auto">
-            <code className={`language-${language}`}>
-              {previewContent}
-              {item.content.length > 200 && '\n...'}
-            </code>
+          <pre className="text-sm bg-gray-900 rounded overflow-x-auto p-3">
+            {highlightedCode ? (
+              <code 
+                className={`language-${language}`}
+                dangerouslySetInnerHTML={{ __html: highlightedCode }}
+              />
+            ) : (
+              <code className={`language-${language}`}>
+                {previewContent}
+              </code>
+            )}
+            {item.content.length > 200 && (
+              <span className="text-gray-400">{'\n...'}</span>
+            )}
           </pre>
         )}
 
