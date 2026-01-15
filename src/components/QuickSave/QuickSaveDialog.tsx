@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { X, Save, Wand2 } from 'lucide-react';
+import { X, Save } from 'lucide-react';
 import TagInput from '../TagInput/TagInput';
 import Editor from 'react-simple-code-editor';
 import type { ContentType } from '../../types';
@@ -148,15 +148,6 @@ export default function QuickSaveDialog({
     return formatted.join('\n');
   };
 
-  const formatCode = () => {
-    try {
-      setContent(formatCodeValue(content));
-    } catch (error) {
-      console.error('Format error:', error);
-      alert('格式化失败，请手动调整');
-    }
-  };
-
   const normalizeTextContent = (text: string) =>
     text.replace(/\r\n/g, '\n').replace(/\u00a0/g, ' ');
 
@@ -294,19 +285,6 @@ export default function QuickSaveDialog({
               <label className="block text-sm font-medium text-gray-700">
                 内容预览
               </label>
-              <div className="flex items-center gap-2">
-                {language !== 'plaintext' && (
-                  <button
-                    type="button"
-                    onClick={formatCode}
-                    className="text-xs text-green-600 hover:text-green-700 flex items-center gap-1"
-                    title="格式化代码（统一缩进）"
-                  >
-                    <Wand2 size={12} />
-                    格式化
-                  </button>
-                )}
-              </div>
             </div>
 
             {language === 'plaintext' ? (
