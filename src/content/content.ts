@@ -11,14 +11,41 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     // 插入文本到当前焦点元素
     insertTextToActiveElement(message.text);
     sendResponse({ success: true });
+  } else if (message.action === 'getSelectedContent') {
+    // 获取选中的文本和 HTML
+    const selection = window.getSelection();
+    const text = normalizeSelectionText(selection?.toString() || '');
+    const html = getSelectionHtml(selection);
+    sendResponse({ text, html });
   } else if (message.action === 'getSelectedText') {
     // 获取选中的文本
-    const selectedText = window.getSelection()?.toString() || '';
-    sendResponse({ text: selectedText });
+    const selection = window.getSelection();
+    const text = normalizeSelectionText(selection?.toString() || '');
+    const html = getSelectionHtml(selection);
+    sendResponse({ text, html });
   }
 
   return true; // 保持消息通道开放以进行异步响应
 });
+
+/**
+ * 获取选区的 HTML 内容
+ */
+function getSelectionHtml(selection: Selection | null): string {
+  if (!selection || selection.rangeCount === 0) return '';
+  const container = document.createElement('div');
+  for (let i = 0; i < selection.rangeCount; i += 1) {
+    container.appendChild(selection.getRangeAt(i).cloneContents());
+  }
+  return container.innerHTML;
+}
+
+/**
+ * 规范化选中文本，保留换行与空格
+ */
+function normalizeSelectionText(text: string): string {
+  return text.replace(/\r\n/g, '\n').replace(/\u00a0/g, ' ');
+}
 
 /**
  * 将文本插入到当前激活的输入元素
@@ -174,11 +201,13 @@ document.addEventListener('keydown', (e) => {
   
   if (isSaveKey) {
     e.preventDefault();
-    const selectedText = window.getSelection()?.toString();
+    const selection = window.getSelection();
+    const selectedText = normalizeSelectionText(selection?.toString() || '');
     if (selectedText) {
       chrome.runtime.sendMessage({
         action: 'saveSelectedText',
         text: selectedText,
+        html: getSelectionHtml(selection),
       });
     }
   }

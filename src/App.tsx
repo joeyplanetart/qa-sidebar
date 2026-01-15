@@ -31,7 +31,10 @@ function App() {
   const [editingContent, setEditingContent] = useState<string | null>(null);
   const [useLocalMode, setUseLocalMode] = useState(false);
   const [showAuthPanel, setShowAuthPanel] = useState(false);
-  const [quickSaveContent, setQuickSaveContent] = useState<string | null>(null);
+  const [quickSaveContent, setQuickSaveContent] = useState<{
+    content: string;
+    formattedHtml?: string;
+  } | null>(null);
   const [showInsertDialog, setShowInsertDialog] = useState(false);
   
   const dialog = useDialog();
@@ -88,13 +91,16 @@ function App() {
   useEffect(() => {
     const handleMessage = (message: {
       type?: string;
-      data?: { content?: string; sourceUrl?: string; tabId?: number };
+      data?: { content?: string; formattedHtml?: string; sourceUrl?: string; tabId?: number };
     }) => {
       console.log('App received message:', message);
 
       if (message.type === 'QUICK_SAVE' && message.data?.content) {
         // 显示快速保存对话框
-        setQuickSaveContent(message.data.content);
+        setQuickSaveContent({
+          content: message.data.content,
+          formattedHtml: message.data.formattedHtml,
+        });
       } else if (message.type === 'SHOW_INSERT_MODE') {
         // 显示插入片段对话框
         setShowInsertDialog(true);
@@ -228,6 +234,7 @@ function App() {
     content: string;
     type: ContentType;
     language?: string;
+    formattedHtml?: string;
     tags?: string[];
   }) => {
     try {
@@ -353,7 +360,8 @@ function App() {
 
       {quickSaveContent && (
         <QuickSaveDialog
-          initialContent={quickSaveContent}
+          initialContent={quickSaveContent.content}
+          initialFormattedHtml={quickSaveContent.formattedHtml}
           onSave={handleQuickSave}
           onClose={() => setQuickSaveContent(null)}
           tagSuggestions={availableTags}

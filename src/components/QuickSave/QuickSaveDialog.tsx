@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { X, Save, Wand2 } from 'lucide-react';
 import TagInput from '../TagInput/TagInput';
 import type { ContentType } from '../../types';
@@ -12,14 +12,17 @@ import 'prismjs/components/prism-markup';
 import 'prismjs/components/prism-css';
 import 'prismjs/components/prism-json';
 import 'prismjs/themes/prism-tomorrow.css';
+import { sanitizeHtml } from '../../utils/sanitizeHtml.ts';
 
 interface QuickSaveDialogProps {
   initialContent: string;
+  initialFormattedHtml?: string;
   onSave: (data: {
     title: string;
     content: string;
     type: ContentType;
     language?: string;
+    formattedHtml?: string;
     tags?: string[];
   }) => void;
   onClose: () => void;
@@ -40,6 +43,7 @@ const languageOptions = [
 
 export default function QuickSaveDialog({
   initialContent,
+  initialFormattedHtml,
   onSave,
   onClose,
   tagSuggestions = [],
@@ -51,11 +55,21 @@ export default function QuickSaveDialog({
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const previewRef = useRef<HTMLPreElement>(null);
+  const sanitizedFormattedHtml = useMemo(
+    () => sanitizeHtml(initialFormattedHtml || ''),
+    [initialFormattedHtml]
+  );
 
   // 自动检测语言类型
   useEffect(() => {
-    const detectedLang = detectLanguage(initialContent);
+    const normalizedContent = normalizeTextContent(initialContent);
+    const detectedLang = detectLanguage(normalizedContent);
     setLanguage(detectedLang);
+    if (detectedLang !== 'plaintext' && normalizedContent.trim()) {
+      setContent(formatCodeValue(normalizedContent));
+    } else {
+      setContent(normalizedContent);
+    }
   }, [initialContent]);
 
   // 获取 Prism 语言对象
@@ -93,43 +107,50 @@ export default function QuickSaveDialog({
   };
 
   // 格式化代码
+  const formatCodeValue = (raw: string) => {
+    // 基本的代码格式化：统一缩进
+    const lines = raw.split('\n');
+    let indentLevel = 0;
+    const indentSize = 2;
+
+    const formatted = lines.map(line => {
+      const trimmed = line.trim();
+      if (!trimmed) return '';
+
+      // 减少缩进：遇到闭合括号
+      if (trimmed.startsWith('}') || trimmed.startsWith(']') || trimmed.startsWith(')')) {
+        indentLevel = Math.max(0, indentLevel - 1);
+      }
+
+      // 应用缩进
+      const indentedLine = ' '.repeat(indentLevel * indentSize) + trimmed;
+
+      // 增加缩进：遇到开括号
+      if (trimmed.endsWith('{') || trimmed.endsWith('[') || trimmed.endsWith('(')) {
+        indentLevel++;
+      }
+      // 处理同一行的闭合括号
+      else if (trimmed.startsWith('}') || trimmed.startsWith(']') || trimmed.startsWith(')')) {
+        // 已经处理过了
+      }
+
+      return indentedLine;
+    });
+
+    return formatted.join('\n');
+  };
+
   const formatCode = () => {
     try {
-      // 基本的代码格式化：统一缩进
-      const lines = content.split('\n');
-      let indentLevel = 0;
-      const indentSize = 2;
-      
-      const formatted = lines.map(line => {
-        const trimmed = line.trim();
-        if (!trimmed) return '';
-        
-        // 减少缩进：遇到闭合括号
-        if (trimmed.startsWith('}') || trimmed.startsWith(']') || trimmed.startsWith(')')) {
-          indentLevel = Math.max(0, indentLevel - 1);
-        }
-        
-        // 应用缩进
-        const indentedLine = ' '.repeat(indentLevel * indentSize) + trimmed;
-        
-        // 增加缩进：遇到开括号
-        if (trimmed.endsWith('{') || trimmed.endsWith('[') || trimmed.endsWith('(')) {
-          indentLevel++;
-        }
-        // 处理同一行的闭合括号
-        else if (trimmed.startsWith('}') || trimmed.startsWith(']') || trimmed.startsWith(')')) {
-          // 已经处理过了
-        }
-        
-        return indentedLine;
-      });
-      
-      setContent(formatted.join('\n'));
+      setContent(formatCodeValue(content));
     } catch (error) {
       console.error('Format error:', error);
       alert('格式化失败，请手动调整');
     }
   };
+
+  const normalizeTextContent = (text: string) =>
+    text.replace(/\r\n/g, '\n').replace(/\u00a0/g, ' ');
 
   const detectLanguage = (text: string): string => {
     // 简单的语言检测逻辑
@@ -165,6 +186,10 @@ export default function QuickSaveDialog({
         content: content.trim(),
         type: selectedLang?.type || 'text',
         language: selectedLang?.type === 'text' ? undefined : language,
+        formattedHtml:
+          language === 'plaintext' && sanitizedFormattedHtml
+            ? sanitizedFormattedHtml
+            : undefined,
         tags: tags.length > 0 ? tags : undefined,
       });
       onClose();
@@ -276,11 +301,19 @@ export default function QuickSaveDialog({
               />
             ) : (
               /* 预览模式 - 语法高亮 */
-              <div className="w-full h-48 overflow-auto border border-gray-300 rounded-lg bg-gray-900">
+              <div
+                className={`w-full h-48 overflow-auto border border-gray-300 rounded-lg ${
+                  language === 'plaintext' ? 'bg-white' : 'bg-gray-900'
+                }`}
+              >
                 {language === 'plaintext' ? (
-                  <pre className="px-3 py-2 bg-gray-50 font-mono text-sm whitespace-pre m-0 min-h-full" style={{ lineHeight: '1.5' }}>
-                    {content}
-                  </pre>
+                  sanitizedFormattedHtml ? (
+                    <div className="quick-save-rich-preview px-3 py-2 bg-white min-h-full" dangerouslySetInnerHTML={{ __html: sanitizedFormattedHtml }} />
+                  ) : (
+                    <pre className="px-3 py-2 bg-gray-50 font-mono text-sm whitespace-pre m-0 min-h-full" style={{ lineHeight: '1.5' }}>
+                      {content}
+                    </pre>
+                  )
                 ) : (
                   <pre 
                     ref={previewRef}

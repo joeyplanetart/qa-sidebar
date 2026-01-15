@@ -40,3 +40,60 @@ code[class*="language-"] {
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background-color: #9ca3af;
 }
+
+/* 快速保存富文本预览样式 */
+.quick-save-rich-preview {
+  color: #374151;
+  line-height: 1.5;
+}
+
+.quick-save-rich-preview p {
+  margin: 0.5rem 0;
+}
+
+.quick-save-rich-preview a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.quick-save-rich-preview strong {
+  font-weight: 600;
+}
+
+.quick-save-rich-preview em {
+  font-style: italic;
+}
+
+.quick-save-rich-preview ul,
+.quick-save-rich-preview ol {
+  margin: 0.5rem 0;
+  padding-left: 1.25rem;
+}
+
+.quick-save-rich-preview li {
+  margin: 0.25rem 0;
+}
+
+.quick-save-rich-preview pre {
+  background: #111827;
+  color: #f3f4f6;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.quick-save-rich-preview code {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.875rem;
+  background: #f3f4f6;
+  color: #111827;
+  padding: 0 0.25rem;
+  border-radius: 0.25rem;
+}
+
+.quick-save-rich-preview pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}

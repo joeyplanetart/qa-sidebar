@@ -10,6 +10,7 @@ import 'prismjs/components/prism-java';
 import 'prismjs/components/prism-css';
 import { useEffect, useState, memo } from 'react';
 import { Virtuoso } from 'react-virtuoso';
+import { sanitizeHtml } from '../../utils/sanitizeHtml.ts';
 
 interface ContentListProps {
   contents: ContentItem[];
@@ -63,6 +64,9 @@ const ContentItemRow = memo(
   }) => {
     const Icon = typeIcons[item.type];
     const previewContent = item.content.slice(0, 200);
+    const sanitizedFormattedHtml = item.formattedHtml
+      ? sanitizeHtml(item.formattedHtml)
+      : '';
     const language = item.language || (item.type === 'sql' ? 'sql' : 'text');
 
     useEffect(() => {
@@ -132,10 +136,17 @@ const ContentItemRow = memo(
         </div>
 
         {item.type === 'text' ? (
-          <div className="text-sm text-gray-700 bg-gray-50 p-3 rounded">
-            {previewContent}
-            {item.content.length > 200 && '...'}
-          </div>
+          sanitizedFormattedHtml ? (
+            <div
+              className="quick-save-rich-preview text-sm bg-white border border-gray-200 p-3 rounded max-h-32 overflow-hidden"
+              dangerouslySetInnerHTML={{ __html: sanitizedFormattedHtml }}
+            />
+          ) : (
+            <div className="text-sm text-gray-700 bg-gray-50 p-3 rounded">
+              {previewContent}
+              {item.content.length > 200 && '...'}
+            </div>
+          )
         ) : (
           <pre className="text-sm bg-gray-900 rounded overflow-x-auto">
             <code className={`language-${language}`}>

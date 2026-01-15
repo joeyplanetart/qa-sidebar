@@ -31,18 +31,28 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (!tab?.id) return;
 
   if (info.menuItemId === 'save-selection' && info.selectionText) {
-    // 打开 side panel 并传递选中的文本
-    chrome.sidePanel.open({ tabId: tab.id }).then(() => {
-      setTimeout(() => {
-        chrome.runtime.sendMessage({
-          type: 'QUICK_SAVE',
-          data: {
-            content: info.selectionText,
-            sourceUrl: tab.url,
-          },
+    // 打开 side panel 并传递选中的文本/HTML
+    const fallbackText = info.selectionText || '';
+    chrome.tabs.sendMessage(
+      tab.id,
+      { action: 'getSelectedContent' },
+      (response) => {
+        const text = response?.text || fallbackText;
+        const formattedHtml = response?.html || '';
+        chrome.sidePanel.open({ tabId: tab.id }).then(() => {
+          setTimeout(() => {
+            chrome.runtime.sendMessage({
+              type: 'QUICK_SAVE',
+              data: {
+                content: text,
+                formattedHtml: formattedHtml || undefined,
+                sourceUrl: tab.url,
+              },
+            });
+          }, 500);
         });
-      }, 500);
-    });
+      }
+    );
   } else if (info.menuItemId === 'insert-snippet') {
     // 打开 side panel 并显示片段选择器
     chrome.sidePanel.open({ tabId: tab.id }).then(() => {
@@ -90,6 +100,7 @@ chrome.runtime.onMessage.addListener(
                 type: 'QUICK_SAVE',
                 data: {
                   content: request.text,
+                  formattedHtml: request.html || undefined,
                 },
               });
             }, 500);
@@ -159,14 +170,16 @@ chrome.commands.onCommand.addListener((command) => {
       });
     } else if (command === 'save-selection' && tab.id) {
       // Ctrl+Shift+S - 保存选中文本
-      chrome.tabs.sendMessage(tab.id, { action: 'getSelectedText' }, (response) => {
-        if (response?.text && tab.id) {
+      chrome.tabs.sendMessage(tab.id, { action: 'getSelectedContent' }, (response) => {
+        const content = response?.text;
+        if (content && tab.id) {
           chrome.sidePanel.open({ tabId: tab.id }).then(() => {
             setTimeout(() => {
               chrome.runtime.sendMessage({
                 type: 'QUICK_SAVE',
                 data: {
-                  content: response.text,
+                  content,
+                  formattedHtml: response?.html || undefined,
                 },
               });
             }, 500);
