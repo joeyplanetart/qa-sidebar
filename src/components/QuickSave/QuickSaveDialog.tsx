@@ -164,7 +164,7 @@ export default function QuickSaveDialog({
     const trimmedText = text.trim();
     
     // Shell/Bash 检测
-    const bashKeywords = /^(#!/|source\s|export\s|alias\s|echo\s|cd\s|ls\s|mkdir\s|rm\s|cp\s|mv\s|chmod\s|chown\s|sudo\s|apt\s|yum\s|brew\s|npm\s|yarn\s|pip\s|curl\s|wget\s)/i;
+    const bashKeywords = /^(#!\/|source\s|export\s|alias\s|echo\s|cd\s|ls\s|mkdir\s|rm\s|cp\s|mv\s|chmod\s|chown\s|sudo\s|apt\s|yum\s|brew\s|npm\s|yarn\s|pip\s|curl\s|wget\s)/i;
     if (/^#!\s*\/.*\/(ba)?sh/i.test(trimmedText) || bashKeywords.test(trimmedText)) {
       return 'bash';
     }
