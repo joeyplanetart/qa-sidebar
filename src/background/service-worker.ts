@@ -28,25 +28,26 @@ chrome.action.onClicked.addListener((tab: chrome.tabs.Tab) => {
 
 // 监听右键菜单点击
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (!tab?.id) return;
+  const tabId = tab?.id;
+  if (!tabId) return;
 
   if (info.menuItemId === 'save-selection' && info.selectionText) {
     // 打开 side panel 并传递选中的文本/HTML
     const fallbackText = info.selectionText || '';
     chrome.tabs.sendMessage(
-      tab.id,
+      tabId,
       { action: 'getSelectedContent' },
       (response) => {
         const text = response?.text || fallbackText;
         const formattedHtml = response?.html || '';
-        chrome.sidePanel.open({ tabId: tab.id }).then(() => {
+        chrome.sidePanel.open({ tabId }).then(() => {
           setTimeout(() => {
             chrome.runtime.sendMessage({
               type: 'QUICK_SAVE',
               data: {
                 content: text,
                 formattedHtml: formattedHtml || undefined,
-                sourceUrl: tab.url,
+                sourceUrl: tab?.url,
               },
             });
           }, 500);
@@ -55,11 +56,11 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     );
   } else if (info.menuItemId === 'insert-snippet') {
     // 打开 side panel 并显示片段选择器
-    chrome.sidePanel.open({ tabId: tab.id }).then(() => {
+    chrome.sidePanel.open({ tabId }).then(() => {
       setTimeout(() => {
         chrome.runtime.sendMessage({
           type: 'SHOW_INSERT_MODE',
-          data: { tabId: tab.id },
+          data: { tabId },
         });
       }, 500);
     });
@@ -69,7 +70,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 // 监听来自 content script 和 side panel 的消息
 chrome.runtime.onMessage.addListener(
   (
-    request: { type?: string; action?: string; data?: any; text?: string; contentId?: string },
+    request: { type?: string; action?: string; data?: any; text?: string; html?: string; contentId?: string },
     sender: chrome.runtime.MessageSender,
     sendResponse: (response: any) => void
   ) => {
@@ -77,8 +78,9 @@ chrome.runtime.onMessage.addListener(
 
     // 兼容旧消息格式
     if (request.type === 'SAVE_CONTENT') {
-      if (sender.tab?.id) {
-        chrome.sidePanel.open({ tabId: sender.tab.id });
+      const senderTabId = sender.tab?.id;
+      if (senderTabId) {
+        chrome.sidePanel.open({ tabId: senderTabId });
         setTimeout(() => {
           chrome.runtime.sendMessage({
             type: 'NEW_CONTENT',
@@ -93,8 +95,9 @@ chrome.runtime.onMessage.addListener(
     // 处理保存选中文本
     if (request.action === 'saveSelectedText') {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]?.id) {
-          chrome.sidePanel.open({ tabId: tabs[0].id }).then(() => {
+        const activeTabId = tabs[0]?.id;
+        if (activeTabId) {
+          chrome.sidePanel.open({ tabId: activeTabId }).then(() => {
             setTimeout(() => {
               chrome.runtime.sendMessage({
                 type: 'QUICK_SAVE',
@@ -114,9 +117,10 @@ chrome.runtime.onMessage.addListener(
     // 处理插入文本到页面
     if (request.action === 'insertToPage') {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]?.id) {
+        const activeTabId = tabs[0]?.id;
+        if (activeTabId) {
           chrome.tabs.sendMessage(
-            tabs[0].id,
+            activeTabId,
             {
               action: 'insertText',
               text: request.text,
@@ -133,9 +137,10 @@ chrome.runtime.onMessage.addListener(
     // 处理获取选中文本
     if (request.action === 'getSelectedText') {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]?.id) {
+        const activeTabId = tabs[0]?.id;
+        if (activeTabId) {
           chrome.tabs.sendMessage(
-            tabs[0].id,
+            activeTabId,
             { action: 'getSelectedText' },
             (response) => {
               sendResponse(response);
@@ -156,24 +161,25 @@ chrome.commands.onCommand.addListener((command) => {
 
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tab = tabs[0];
-    if (!tab?.id) return;
+    const tabId = tab?.id;
+    if (!tabId) return;
 
-    if (command === 'insert-snippet' && tab.id) {
+    if (command === 'insert-snippet' && tabId) {
       // Ctrl+Shift+V - 插入片段
-      chrome.sidePanel.open({ tabId: tab.id }).then(() => {
+      chrome.sidePanel.open({ tabId }).then(() => {
         setTimeout(() => {
           chrome.runtime.sendMessage({
             type: 'SHOW_INSERT_MODE',
-            data: { tabId: tab.id },
+            data: { tabId },
           });
         }, 500);
       });
-    } else if (command === 'save-selection' && tab.id) {
+    } else if (command === 'save-selection' && tabId) {
       // Ctrl+Shift+S - 保存选中文本
-      chrome.tabs.sendMessage(tab.id, { action: 'getSelectedContent' }, (response) => {
+      chrome.tabs.sendMessage(tabId, { action: 'getSelectedContent' }, (response) => {
         const content = response?.text;
-        if (content && tab.id) {
-          chrome.sidePanel.open({ tabId: tab.id }).then(() => {
+        if (content && tabId) {
+          chrome.sidePanel.open({ tabId }).then(() => {
             setTimeout(() => {
               chrome.runtime.sendMessage({
                 type: 'QUICK_SAVE',
