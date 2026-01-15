@@ -9,10 +9,9 @@ interface HeaderProps {
   onNewContent: () => void;
   onShowStatistics?: () => void;
   onShowLogin?: () => void;
-  showAlert?: (message: string, title?: string) => Promise<boolean>;
 }
 
-export default function Header({ user, onNewContent, onShowStatistics, onShowLogin, showAlert }: HeaderProps) {
+export default function Header({ user, onNewContent, onShowStatistics, onShowLogin }: HeaderProps) {
   const handleSignOut = async () => {
     try {
       await signOutChromeIdentity();
@@ -29,9 +28,9 @@ export default function Header({ user, onNewContent, onShowStatistics, onShowLog
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-bold text-primary dark:text-indigo-400"></h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {user ? '保存并同步您的代码片段' : '本地模式'}
-          </p>
+          {/* <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            {user ? '' : '本地模式'}
+          </p> */}
         </div>
         <div className="flex items-center gap-3">
           <ThemeToggle />

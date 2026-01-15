@@ -339,7 +339,6 @@ function App() {
         onNewContent={handleNewContent} 
         onShowStatistics={() => setShowStatistics(true)}
         onShowLogin={handleShowLogin}
-        showAlert={dialog.showAlert} 
       />
       
       <div className="flex-1 flex flex-col overflow-hidden">
