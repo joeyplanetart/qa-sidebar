@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
-import { X, Search, Send, FileText, Code, Database, Tag } from 'lucide-react';
+import { X, Search, Send, FileText, Code, Database, Tag, Variable } from 'lucide-react';
 import type { ContentItem } from '../../types';
+import VariableForm from '../VariableForm/VariableForm';
+import { replaceVariables } from '../../utils/variables';
 
 interface QuickInsertDialogProps {
   contents: ContentItem[];
@@ -21,6 +23,7 @@ export default function QuickInsertDialog({
 }: QuickInsertDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [showVariableForm, setShowVariableForm] = useState(false);
 
   // 过滤内容
   const filteredContents = useMemo(() => {
@@ -41,7 +44,23 @@ export default function QuickInsertDialog({
 
   const handleInsert = () => {
     if (selectedContent) {
-      onInsert(selectedContent.content);
+      // 检查是否包含变量
+      if (selectedContent.variables && selectedContent.variables.length > 0) {
+        // 显示变量表单
+        setShowVariableForm(true);
+      } else {
+        // 直接插入
+        onInsert(selectedContent.content);
+        onClose();
+      }
+    }
+  };
+
+  const handleVariableSubmit = (values: Record<string, string>) => {
+    if (selectedContent) {
+      // 替换变量后插入
+      const replacedContent = replaceVariables(selectedContent.content, values);
+      onInsert(replacedContent);
       onClose();
     }
   };
@@ -116,6 +135,12 @@ export default function QuickInsertDialog({
                       <div className="flex items-center gap-2 mb-2">
                         <Icon size={16} className="text-primary dark:text-indigo-400 flex-shrink-0" />
                         <h3 className="font-medium text-gray-900 dark:text-white truncate">{item.title}</h3>
+                        {item.variables && item.variables.length > 0 && (
+                          <span className="flex items-center gap-1 px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 rounded text-xs flex-shrink-0">
+                            <Variable size={10} />
+                            {item.variables.length}
+                          </span>
+                        )}
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{item.content}</p>
                       {item.tags && item.tags.length > 0 && (
@@ -156,10 +181,34 @@ export default function QuickInsertDialog({
                     ))}
                   </div>
                 )}
+                {selectedContent.variables && selectedContent.variables.length > 0 && (
+                  <div className="mb-3 p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+                    <div className="flex items-center gap-1 text-xs text-indigo-700 dark:text-indigo-300 mb-1">
+                      <Variable size={12} />
+                      <span className="font-medium">包含变量:</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedContent.variables.map((varName, idx) => (
+                        <code
+                          key={idx}
+                          className="px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200 rounded text-xs"
+                        >
+                          ${'{' + varName + '}'}
+                        </code>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="bg-gray-900 dark:bg-gray-950 rounded-lg p-4 overflow-x-auto">
-                  <pre className="text-sm text-gray-100 dark:text-gray-200 whitespace-pre-wrap font-mono">
-                    {selectedContent.content}
-                  </pre>
+                  <pre 
+                    className="text-sm text-gray-100 dark:text-gray-200 whitespace-pre-wrap font-mono"
+                    dangerouslySetInnerHTML={{
+                      __html: selectedContent.content.replace(
+                        /\$\{([^}]+)\}/g,
+                        '<span class="text-yellow-400 font-semibold">${$1}</span>'
+                      )
+                    }}
+                  />
                 </div>
                 <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
                   {selectedContent.content.length} 字符
@@ -200,6 +249,15 @@ export default function QuickInsertDialog({
           </div>
         </div>
       </div>
+
+      {/* 变量表单弹窗 */}
+      {showVariableForm && selectedContent && selectedContent.variables && (
+        <VariableForm
+          variables={selectedContent.variables}
+          onSubmit={handleVariableSubmit}
+          onClose={() => setShowVariableForm(false)}
+        />
+      )}
     </div>
   );
 }

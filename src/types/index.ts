@@ -9,6 +9,7 @@ export interface ContentItem {
   language?: string;
   formattedHtml?: string;
   tags?: string[];
+  variables?: string[]; // 代码片段中的变量/占位符列表
   isPinned?: boolean;
   createdAt: number;
   updatedAt: number;

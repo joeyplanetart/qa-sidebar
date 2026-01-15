@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { X, Save } from 'lucide-react';
+import { X, Save, Variable } from 'lucide-react';
 import TagInput from '../TagInput/TagInput';
 import Editor from 'react-simple-code-editor';
 import type { ContentType } from '../../types';
@@ -18,6 +18,7 @@ import 'prismjs/components/prism-markdown';
 import 'prismjs/themes/prism-tomorrow.css';
 import { sanitizeHtml } from '../../utils/sanitizeHtml';
 import { useTheme } from '../../contexts/ThemeContext';
+import { extractVariables } from '../../utils/variables';
 
 interface QuickSaveDialogProps {
   initialContent: string;
@@ -29,6 +30,7 @@ interface QuickSaveDialogProps {
     language?: string;
     formattedHtml?: string;
     tags?: string[];
+    variables?: string[];
   }) => void;
   onClose: () => void;
   tagSuggestions?: string[];
@@ -66,6 +68,9 @@ export default function QuickSaveDialog({
     () => sanitizeHtml(initialFormattedHtml || ''),
     [initialFormattedHtml]
   );
+
+  // 提取变量占位符
+  const variables = useMemo(() => extractVariables(content), [content]);
 
   // 自动检测语言类型
   useEffect(() => {
@@ -211,6 +216,7 @@ export default function QuickSaveDialog({
             ? sanitizedFormattedHtml
             : undefined,
         tags: tags.length > 0 ? tags : undefined,
+        variables: variables.length > 0 ? variables : undefined,
       });
       onClose();
     } catch (error) {
@@ -287,6 +293,12 @@ export default function QuickSaveDialog({
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 内容预览
               </label>
+              {variables.length > 0 && (
+                <span className="text-xs text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
+                  <Variable size={14} />
+                  检测到 {variables.length} 个变量
+                </span>
+              )}
             </div>
 
             {language === 'plaintext' ? (
@@ -338,6 +350,11 @@ export default function QuickSaveDialog({
 
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               {content.length} 字符 · {language === 'plaintext' ? '纯文本' : languageOptions.find(l => l.value === language)?.label}
+              {variables.length > 0 && (
+                <span className="ml-2 text-indigo-600 dark:text-indigo-400">
+                  · 包含变量: {variables.map(v => `\${${v}}`).join(', ')}
+                </span>
+              )}
             </p>
           </div>
         </div>

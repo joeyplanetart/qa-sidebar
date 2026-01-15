@@ -95,3 +95,17 @@ code[class*="language-"] {
   color: inherit;
   padding: 0;
 }
+
+/* 变量占位符样式 */
+.variable-placeholder {
+  @apply text-yellow-400 font-semibold;
+  background-color: rgba(251, 191, 36, 0.1);
+  padding: 0 0.25rem;
+  border-radius: 0.25rem;
+}
+
+/* 暗色模式下的变量占位符 */
+.dark .variable-placeholder {
+  @apply text-yellow-300;
+  background-color: rgba(251, 191, 36, 0.15);
+}
