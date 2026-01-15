@@ -236,6 +236,7 @@ function App() {
     language?: string;
     formattedHtml?: string;
     tags?: string[];
+    variables?: string[];
   }) => {
     try {
       const now = Date.now();

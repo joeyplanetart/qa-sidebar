@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { X, Variable } from 'lucide-react';
 import Editor from 'react-simple-code-editor';
 import { highlight, languages } from 'prismjs';
 import 'prismjs/components/prism-javascript';
@@ -19,6 +19,7 @@ import { getContentById, createContent, updateContent, getContents } from '../..
 import { getFromLocalStorage, saveToLocalStorage } from '../../services/storage';
 import TagInput from '../TagInput/TagInput';
 import { useTheme } from '../../contexts/ThemeContext';
+import { extractVariables } from '../../utils/variables';
 
 interface EditorModalProps {
   contentId: string | null;
@@ -53,6 +54,9 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(!!contentId);
   const { resolvedTheme } = useTheme();
+
+  // 提取变量占位符
+  const variables = useMemo(() => extractVariables(content), [content]);
 
   useEffect(() => {
     if (contentId) {
@@ -144,6 +148,7 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
             type,
             language: type === 'text' ? undefined : language,
             tags: tags.length > 0 ? tags : undefined,
+            variables: variables.length > 0 ? variables : undefined,
             updatedAt: Date.now(),
           });
         } else {
@@ -155,6 +160,7 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
             type,
             language: type === 'text' ? undefined : language,
             tags: tags.length > 0 ? tags : undefined,
+            variables: variables.length > 0 ? variables : undefined,
             createdAt: Date.now(),
             updatedAt: Date.now(),
           });
@@ -173,6 +179,7 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
                   type,
                   language: type === 'text' ? undefined : language,
                   tags: tags.length > 0 ? tags : undefined,
+                  variables: variables.length > 0 ? variables : undefined,
                   updatedAt: Date.now(),
                 }
               : item
@@ -188,6 +195,7 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
             type,
             language: type === 'text' ? undefined : language,
             tags: tags.length > 0 ? tags : undefined,
+            variables: variables.length > 0 ? variables : undefined,
             createdAt: Date.now(),
             updatedAt: Date.now(),
           };
@@ -316,14 +324,22 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
 
           {/* 编辑器 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              内容
-              {type !== 'text' && (
-                <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
-                  ({languageOptions.find(l => l.value === language)?.label})
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                内容
+                {type !== 'text' && (
+                  <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                    ({languageOptions.find(l => l.value === language)?.label})
+                  </span>
+                )}
+              </label>
+              {variables.length > 0 && (
+                <span className="text-xs text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
+                  <Variable size={14} />
+                  检测到 {variables.length} 个变量
                 </span>
               )}
-            </label>
+            </div>
             {type === 'text' ? (
               <textarea
                 value={content}
@@ -359,6 +375,11 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
             )}
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               💡 提示：按 Tab 键插入缩进，支持语法高亮
+              {variables.length > 0 && (
+                <span className="ml-2 text-indigo-600 dark:text-indigo-400">
+                  · 包含变量: {variables.map(v => `\${${v}}`).join(', ')}
+                </span>
+              )}
             </p>
           </div>
         </div>
