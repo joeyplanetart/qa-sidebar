@@ -230,6 +230,14 @@ function App() {
     localStorage.setItem('qa_sider_use_local_mode', 'true');
   };
 
+  const handleShowLogin = () => {
+    // 清除本地模式标记
+    localStorage.removeItem('qa_sider_use_local_mode');
+    // 显示登录页面
+    setShowAuthPanel(true);
+    setUseLocalMode(false);
+  };
+
   // 处理快速保存
   const handleQuickSave = async (data: {
     title: string;
@@ -330,6 +338,7 @@ function App() {
         user={user} 
         onNewContent={handleNewContent} 
         onShowStatistics={() => setShowStatistics(true)}
+        onShowLogin={handleShowLogin}
         showAlert={dialog.showAlert} 
       />
       

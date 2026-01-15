@@ -1,6 +1,6 @@
 import { Plus, LogOut, LogIn, BarChart3 } from 'lucide-react';
 import type { User } from '../../types';
-import { signOutChromeIdentity, signInWithChromeIdentity } from '../../services/chromeAuth';
+import { signOutChromeIdentity } from '../../services/chromeAuth';
 import { getUserAvatar } from '../../utils/avatar';
 import ThemeToggle from '../ThemeToggle/ThemeToggle';
 
@@ -8,10 +8,11 @@ interface HeaderProps {
   user: User | null;
   onNewContent: () => void;
   onShowStatistics?: () => void;
+  onShowLogin?: () => void;
   showAlert?: (message: string, title?: string) => Promise<boolean>;
 }
 
-export default function Header({ user, onNewContent, onShowStatistics, showAlert }: HeaderProps) {
+export default function Header({ user, onNewContent, onShowStatistics, onShowLogin, showAlert }: HeaderProps) {
   const handleSignOut = async () => {
     try {
       await signOutChromeIdentity();
@@ -20,29 +21,6 @@ export default function Header({ user, onNewContent, onShowStatistics, showAlert
       window.location.reload();
     } catch (error) {
       console.error('登出失败:', error);
-    }
-  };
-
-  const handleLogin = async () => {
-    console.log('🔵 Header: 用户点击登录按钮');
-    try {
-      console.log('🔵 Header: 开始执行登录流程');
-      await signInWithChromeIdentity();
-      console.log('🔵 Header: 登录流程完成');
-      // 清除本地模式标记
-      localStorage.removeItem('qa_sider_use_local_mode');
-    } catch (error) {
-      console.error('🔵 Header: 登录失败', error);
-      if (showAlert) {
-        let errorMessage = error instanceof Error ? error.message : '登录失败，请重试';
-        
-        // 如果是 Authorization page could not be loaded 错误
-        if (errorMessage.includes('Authorization page could not be loaded')) {
-          errorMessage = 'OAuth 认证页面无法加载。\n\n可能原因：\n1. Google OAuth 配置需要时间生效（等待5-10分钟）\n2. 网络问题\n\n建议：稍后重试或使用本地存储模式';
-        }
-        
-        await showAlert(errorMessage, '登录错误');
-      }
     }
   };
 
@@ -117,9 +95,9 @@ export default function Header({ user, onNewContent, onShowStatistics, showAlert
           </button>
         ) : (
           <button
-            onClick={handleLogin}
+            onClick={onShowLogin}
             className="flex items-center gap-1 px-3 py-1.5 text-sm text-primary dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
-            title="使用 Google 账号登录"
+            title="登录账号"
           >
             <LogIn size={16} />
             <span>登录</span>
