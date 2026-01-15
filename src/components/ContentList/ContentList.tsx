@@ -10,7 +10,7 @@ import 'prismjs/components/prism-java';
 import 'prismjs/components/prism-css';
 import { useEffect, useState, memo } from 'react';
 import { Virtuoso } from 'react-virtuoso';
-import { sanitizeHtml } from '../../utils/sanitizeHtml.ts';
+import { sanitizeHtml } from '../../utils/sanitizeHtml';
 
 interface ContentListProps {
   contents: ContentItem[];

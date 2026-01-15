@@ -34,12 +34,21 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === 'save-selection' && info.selectionText) {
     // 打开 side panel 并传递选中的文本/HTML
     const fallbackText = info.selectionText || '';
+    
+    // 先尝试从 content script 获取富文本内容
     chrome.tabs.sendMessage(
       tabId,
       { action: 'getSelectedContent' },
       (response) => {
+        // 处理 content script 未响应的情况（如 chrome:// 页面）
+        const lastError = chrome.runtime.lastError;
+        if (lastError) {
+          console.log('Content script not available:', lastError.message);
+        }
+        
         const text = response?.text || fallbackText;
         const formattedHtml = response?.html || '';
+        
         chrome.sidePanel.open({ tabId }).then(() => {
           setTimeout(() => {
             chrome.runtime.sendMessage({
@@ -51,6 +60,8 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
               },
             });
           }, 500);
+        }).catch((err) => {
+          console.error('Failed to open side panel:', err);
         });
       }
     );
@@ -63,6 +74,8 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
           data: { tabId },
         });
       }, 500);
+    }).catch((err) => {
+      console.error('Failed to open side panel:', err);
     });
   }
 });
@@ -107,6 +120,8 @@ chrome.runtime.onMessage.addListener(
                 },
               });
             }, 500);
+          }).catch((err) => {
+            console.error('Failed to open side panel:', err);
           });
         }
       });
@@ -164,7 +179,7 @@ chrome.commands.onCommand.addListener((command) => {
     const tabId = tab?.id;
     if (!tabId) return;
 
-    if (command === 'insert-snippet' && tabId) {
+    if (command === 'insert-snippet') {
       // Ctrl+Shift+V - 插入片段
       chrome.sidePanel.open({ tabId }).then(() => {
         setTimeout(() => {
@@ -173,12 +188,20 @@ chrome.commands.onCommand.addListener((command) => {
             data: { tabId },
           });
         }, 500);
+      }).catch((err) => {
+        console.error('Failed to open side panel:', err);
       });
-    } else if (command === 'save-selection' && tabId) {
-      // Ctrl+Shift+S - 保存选中文本
+    } else if (command === 'save-selection') {
+      // Alt+Shift+S / Cmd+Shift+D - 保存选中文本
       chrome.tabs.sendMessage(tabId, { action: 'getSelectedContent' }, (response) => {
+        // 处理 content script 未响应的情况
+        const lastError = chrome.runtime.lastError;
+        if (lastError) {
+          console.log('Content script not available:', lastError.message);
+        }
+        
         const content = response?.text;
-        if (content && tabId) {
+        if (content) {
           chrome.sidePanel.open({ tabId }).then(() => {
             setTimeout(() => {
               chrome.runtime.sendMessage({
@@ -189,6 +212,8 @@ chrome.commands.onCommand.addListener((command) => {
                 },
               });
             }, 500);
+          }).catch((err) => {
+            console.error('Failed to open side panel:', err);
           });
         }
       });

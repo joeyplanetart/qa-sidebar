@@ -12,7 +12,7 @@ import 'prismjs/components/prism-markup';
 import 'prismjs/components/prism-css';
 import 'prismjs/components/prism-json';
 import 'prismjs/themes/prism-tomorrow.css';
-import { sanitizeHtml } from '../../utils/sanitizeHtml.ts';
+import { sanitizeHtml } from '../../utils/sanitizeHtml';
 
 interface QuickSaveDialogProps {
   initialContent: string;
