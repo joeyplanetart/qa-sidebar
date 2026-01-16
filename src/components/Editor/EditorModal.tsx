@@ -124,35 +124,35 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
 
     setLoading(true);
     try {
+      const now = Date.now();
+      const dataToSave = {
+        title: title.trim(),
+        content: content.trim(),
+        type,
+        language: type === 'text' ? undefined : language,
+        tags: tags.length > 0 ? tags : undefined,
+        variables: variables.length > 0 ? variables : undefined,
+      };
+
       if (userId) {
-        // 保存到 Supabase
+        // 登录模式：保存到 Supabase
         if (contentId) {
           // 更新
           await updateContent(contentId, {
-            title: title.trim(),
-            content: content.trim(),
-            type,
-            language: type === 'text' ? undefined : language,
-            tags: tags.length > 0 ? tags : undefined,
-            variables: variables.length > 0 ? variables : undefined,
-            updatedAt: Date.now(),
+            ...dataToSave,
+            updatedAt: now,
           });
         } else {
           // 创建
           await createContent({
             userId,
-            title: title.trim(),
-            content: content.trim(),
-            type,
-            language: type === 'text' ? undefined : language,
-            tags: tags.length > 0 ? tags : undefined,
-            variables: variables.length > 0 ? variables : undefined,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
+            ...dataToSave,
+            createdAt: now,
+            updatedAt: now,
           });
         }
       } else {
-        // 保存到本地存储
+        // 本地模式：保存到本地存储
         const localData = await getFromLocalStorage();
         if (contentId) {
           // 更新
@@ -160,13 +160,8 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
             item.id === contentId
               ? {
                   ...item,
-                  title: title.trim(),
-                  content: content.trim(),
-                  type,
-                  language: type === 'text' ? undefined : language,
-                  tags: tags.length > 0 ? tags : undefined,
-                  variables: variables.length > 0 ? variables : undefined,
-                  updatedAt: Date.now(),
+                  ...dataToSave,
+                  updatedAt: now,
                 }
               : item
           );
@@ -174,20 +169,16 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
         } else {
           // 创建
           const newItem: ContentItem = {
-            id: `local_${Date.now()}`,
+            id: `local_${now}`,
             userId: 'local',
-            title: title.trim(),
-            content: content.trim(),
-            type,
-            language: type === 'text' ? undefined : language,
-            tags: tags.length > 0 ? tags : undefined,
-            variables: variables.length > 0 ? variables : undefined,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
+            ...dataToSave,
+            createdAt: now,
+            updatedAt: now,
           };
           await saveToLocalStorage([...localData, newItem]);
         }
       }
+      
       // 保存成功，调用 onSave 回调来刷新列表并关闭编辑器
       onSave();
     } catch (error) {

@@ -250,15 +250,9 @@ function App() {
   }) => {
     try {
       const now = Date.now();
-      const userId = useLocalMode ? 'local' : user?.uid;
 
-      if (!userId) {
-        await dialog.showAlert('请先登录或使用本地模式', '错误');
-        return;
-      }
-
+      // 本地模式：保存到本地存储
       if (useLocalMode) {
-        // 保存到本地
         const localData = await getFromLocalStorage();
         const newItem: ContentItem = {
           id: `local_${now}`,
@@ -268,19 +262,29 @@ function App() {
           updatedAt: now,
         };
         await saveToLocalStorage([...localData, newItem]);
-      } else {
-        // 保存到 Supabase
-        await createContent({
-          userId,
-          ...data,
-          createdAt: now,
-          updatedAt: now,
-        });
+        setQuickSaveContent(null);
+        refresh();
+        await dialog.showAlert('片段已保存到本地！', '成功');
+        return;
       }
+
+      // 登录模式：检查用户是否已登录
+      if (!user?.uid) {
+        await dialog.showAlert('请先登录后再保存到云端\n\n或者使用"本地模式"保存到浏览器本地', '需要登录');
+        return;
+      }
+
+      // 保存到 Supabase
+      await createContent({
+        userId: user.uid,
+        ...data,
+        createdAt: now,
+        updatedAt: now,
+      });
 
       setQuickSaveContent(null);
       refresh();
-      await dialog.showAlert('片段已保存成功！', '成功');
+      await dialog.showAlert('片段已保存到云端！', '成功');
     } catch (error) {
       console.error('快速保存失败:', error);
       await dialog.showAlert('保存失败，请重试', '错误');
