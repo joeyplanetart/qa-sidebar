@@ -1,4 +1,4 @@
-import { FileText, Code, Database, Edit, Trash2, Copy, Check, Pin, PinOff, Tag } from 'lucide-react';
+import { FileText, Code, Database, Edit, Trash2, Copy, Check, Pin, PinOff, Tag, CheckCircle2, Circle } from 'lucide-react';
 import type { ContentItem } from '../../types';
 import { highlight, languages } from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
@@ -16,12 +16,16 @@ import 'prismjs/components/prism-markup';
 import { useState, memo, useMemo } from 'react';
 import { Virtuoso } from 'react-virtuoso';
 import { sanitizeHtml } from '../../utils/sanitizeHtml';
+import BatchActionsBar from './BatchActionsBar';
 
 interface ContentListProps {
   contents: ContentItem[];
   loading: boolean;
+  batchMode: boolean;
+  onBatchModeChange: (mode: boolean) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+  onBatchDelete: (ids: string[]) => void;
   onTogglePin: (id: string) => void;
   showAlert: (message: string, title?: string) => Promise<boolean>;
 }
@@ -58,17 +62,23 @@ const ContentItemRow = memo(
   ({
     item,
     copiedId,
+    isSelected,
+    batchMode,
     onCopy,
     onEdit,
     onDelete,
     onTogglePin,
+    onToggleSelect,
   }: {
     item: ContentItem;
     copiedId: string | null;
+    isSelected: boolean;
+    batchMode: boolean;
     onCopy: (item: ContentItem) => void;
     onEdit: (id: string) => void;
     onDelete: (id: string) => void;
     onTogglePin: (id: string) => void;
+    onToggleSelect: (id: string) => void;
   }) => {
     const Icon = typeIcons[item.type];
     const previewContent = item.content.slice(0, 200);
@@ -111,65 +121,97 @@ const ContentItemRow = memo(
     }, [previewContent, language, item.type]);
 
     return (
-      <div className={`bg-white dark:bg-gray-800 rounded-lg p-4 border ${item.isPinned ? 'border-yellow-400 shadow-md' : 'border-gray-200 dark:border-gray-700'} hover:shadow-md transition-all`}>
+      <div 
+        className={`bg-white dark:bg-gray-800 rounded-lg p-4 border ${
+          isSelected 
+            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 shadow-lg' 
+            : item.isPinned 
+              ? 'border-yellow-400 shadow-md' 
+              : 'border-gray-200 dark:border-gray-700'
+        } hover:shadow-md transition-all ${batchMode ? 'cursor-pointer' : ''}`}
+        onClick={batchMode ? () => onToggleSelect(item.id) : undefined}
+      >
         <div className="flex items-start justify-between mb-3">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <Icon size={18} className="text-primary dark:text-indigo-400" />
-              <h3 className="font-semibold text-gray-900 dark:text-white">{item.title}</h3>
-              {item.isPinned && (
-                <Pin size={14} className="text-yellow-600 fill-yellow-600" />
-              )}
-            </div>
-            <div className="flex items-center gap-2 ml-6">
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200">
-                {typeLabels[item.type]}
-              </span>
-              {item.language && item.type !== 'text' && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                  {languageLabels[item.language] || item.language}
+          <div className="flex-1 flex items-start gap-3">
+            {/* 批量模式：显示选择框 */}
+            {batchMode && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleSelect(item.id);
+                }}
+                className="flex-shrink-0 mt-1"
+              >
+                {isSelected ? (
+                  <CheckCircle2 size={20} className="text-indigo-600 dark:text-indigo-400" />
+                ) : (
+                  <Circle size={20} className="text-gray-400 dark:text-gray-500" />
+                )}
+              </button>
+            )}
+
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <Icon size={18} className="text-primary dark:text-indigo-400" />
+                <h3 className="font-semibold text-gray-900 dark:text-white">{item.title}</h3>
+                {item.isPinned && (
+                  <Pin size={14} className="text-yellow-600 fill-yellow-600" />
+                )}
+              </div>
+              <div className="flex items-center gap-2 ml-6">
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200">
+                  {typeLabels[item.type]}
                 </span>
-              )}
+                {item.language && item.type !== 'text' && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                    {languageLabels[item.language] || item.language}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => onTogglePin(item.id)}
-              className={`p-1.5 rounded transition-colors ${
-                item.isPinned
-                  ? 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-900'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900'
-              }`}
-              title={item.isPinned ? '取消置顶' : '置顶'}
-            >
-              {item.isPinned ? <Pin size={16} className="fill-yellow-600" /> : <PinOff size={16} />}
-            </button>
-            <button
-              onClick={() => onCopy(item)}
-              className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900 rounded transition-colors"
-              title="复制内容"
-            >
-              {copiedId === item.id ? (
-                <Check size={16} className="text-green-600" />
-              ) : (
-                <Copy size={16} />
-              )}
-            </button>
-            <button
-              onClick={() => onEdit(item.id)}
-              className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-              title="编辑"
-            >
-              <Edit size={16} />
-            </button>
-            <button
-              onClick={() => onDelete(item.id)}
-              className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900 rounded transition-colors"
-              title="删除"
-            >
-              <Trash2 size={16} />
-            </button>
-          </div>
+
+          {/* 非批量模式：显示操作按钮 */}
+          {!batchMode && (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => onTogglePin(item.id)}
+                className={`p-1.5 rounded transition-colors ${
+                  item.isPinned
+                    ? 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-900'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900'
+                }`}
+                title={item.isPinned ? '取消置顶' : '置顶'}
+              >
+                {item.isPinned ? <Pin size={16} className="fill-yellow-600" /> : <PinOff size={16} />}
+              </button>
+              <button
+                onClick={() => onCopy(item)}
+                className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900 rounded transition-colors"
+                title="复制内容"
+              >
+                {copiedId === item.id ? (
+                  <Check size={16} className="text-green-600" />
+                ) : (
+                  <Copy size={16} />
+                )}
+              </button>
+              <button
+                onClick={() => onEdit(item.id)}
+                className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                title="编辑"
+              >
+                <Edit size={16} />
+              </button>
+              <button
+                onClick={() => onDelete(item.id)}
+                className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900 rounded transition-colors"
+                title="删除"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          )}
         </div>
 
         {item.type === 'text' ? (
@@ -227,8 +269,9 @@ const ContentItemRow = memo(
 
 ContentItemRow.displayName = 'ContentItemRow';
 
-export default function ContentList({ contents, loading, onEdit, onDelete, onTogglePin, showAlert }: ContentListProps) {
+export default function ContentList({ contents, loading, batchMode, onBatchModeChange, onEdit, onDelete, onBatchDelete, onTogglePin, showAlert }: ContentListProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const handleCopy = async (item: ContentItem) => {
     try {
@@ -239,6 +282,46 @@ export default function ContentList({ contents, loading, onEdit, onDelete, onTog
       console.error('复制失败:', error);
       await showAlert('复制失败，请重试', '错误');
     }
+  };
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    setSelectedIds(new Set(contents.map(item => item.id)));
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedIds(new Set());
+  };
+
+  const handleBatchDelete = async () => {
+    if (selectedIds.size === 0) return;
+
+    const confirmed = await showAlert(
+      `确定要删除选中的 ${selectedIds.size} 个片段吗？\n\n`,
+      '确认'
+    );
+
+    if (confirmed) {
+      await onBatchDelete(Array.from(selectedIds));
+      setSelectedIds(new Set());
+      onBatchModeChange(false);
+    }
+  };
+
+  const handleCancelBatch = () => {
+    onBatchModeChange(false);
+    setSelectedIds(new Set());
   };
 
   if (loading) {
@@ -260,23 +343,41 @@ export default function ContentList({ contents, loading, onEdit, onDelete, onTog
   }
 
   return (
-    <div style={{ height: 'calc(100vh - 280px)', width: '100%' }}>
-      <Virtuoso
-        data={contents}
-        overscan={200}
-        itemContent={(_index, item) => (
-          <div style={{ paddingBottom: '12px' }}>
-            <ContentItemRow
-              item={item}
-              copiedId={copiedId}
-              onCopy={handleCopy}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onTogglePin={onTogglePin}
-            />
-          </div>
-        )}
-      />
+    <div className="flex flex-col h-full">
+      {/* 批量操作工具栏 */}
+      {batchMode && (
+        <BatchActionsBar
+          selectedCount={selectedIds.size}
+          totalCount={contents.length}
+          onSelectAll={handleSelectAll}
+          onDeselectAll={handleDeselectAll}
+          onBatchDelete={handleBatchDelete}
+          onCancel={handleCancelBatch}
+        />
+      )}
+
+      {/* 列表内容 */}
+      <div style={{ height: batchMode ? 'calc(100vh - 340px)' : 'calc(100vh - 280px)', width: '100%' }}>
+        <Virtuoso
+          data={contents}
+          overscan={200}
+          itemContent={(_index, item) => (
+            <div style={{ paddingBottom: '12px' }}>
+              <ContentItemRow
+                item={item}
+                copiedId={copiedId}
+                isSelected={selectedIds.has(item.id)}
+                batchMode={batchMode}
+                onCopy={handleCopy}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onTogglePin={onTogglePin}
+                onToggleSelect={handleToggleSelect}
+              />
+            </div>
+          )}
+        />
+      </div>
     </div>
   );
 }

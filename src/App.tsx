@@ -38,6 +38,7 @@ function App() {
   } | null>(null);
   const [showInsertDialog, setShowInsertDialog] = useState(false);
   const [showStatistics, setShowStatistics] = useState(false);
+  const [batchMode, setBatchMode] = useState(false);
   
   const dialog = useDialog();
   
@@ -203,6 +204,19 @@ function App() {
     }
   };
 
+  const handleBatchDelete = async (ids: string[]) => {
+    try {
+      // 批量删除逻辑
+      for (const id of ids) {
+        await deleteContent(id);
+      }
+      await dialog.showAlert(`成功删除 ${ids.length} 个片段`, '成功');
+    } catch (error) {
+      console.error('批量删除失败:', error);
+      await dialog.showAlert('批量删除失败，请重试', '错误');
+    }
+  };
+
   const handleTogglePin = async (id: string) => {
     try {
       await togglePin(id);
@@ -348,7 +362,12 @@ function App() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="p-4 space-y-4">
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
-          <FilterTabs active={activeFilter} onChange={setActiveFilter} />
+          <FilterTabs 
+            active={activeFilter} 
+            onChange={setActiveFilter}
+            batchMode={batchMode}
+            onBatchModeToggle={() => setBatchMode(true)}
+          />
           <TagFilter
             selectedTags={selectedTags}
             onTagSelect={(tag) => setSelectedTags([...selectedTags, tag])}
@@ -362,8 +381,11 @@ function App() {
           <ContentList
             contents={filteredContents}
             loading={contentsLoading}
+            batchMode={batchMode}
+            onBatchModeChange={setBatchMode}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            onBatchDelete={handleBatchDelete}
             onTogglePin={handleTogglePin}
             showAlert={dialog.showAlert}
           />
