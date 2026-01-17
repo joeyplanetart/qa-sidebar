@@ -12,13 +12,13 @@ export default function Loading({ message = '加载中...' }: LoadingProps) {
         <div className="relative">
           <Loader2 
             size={48} 
-            className="text-indigo-600 dark:text-indigo-400 animate-spin" 
+            className="text-primary animate-spin" 
           />
           {/* 发光效果 */}
           <div className="absolute inset-0 blur-xl opacity-50">
             <Loader2 
               size={48} 
-              className="text-indigo-600 dark:text-indigo-400 animate-spin" 
+              className="text-primary animate-spin" 
             />
           </div>
         </div>
@@ -35,9 +35,9 @@ export default function Loading({ message = '加载中...' }: LoadingProps) {
 
         {/* 加载进度点 */}
         <div className="flex gap-2">
-          <div className="w-2 h-2 bg-indigo-600 dark:bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-          <div className="w-2 h-2 bg-indigo-600 dark:bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-          <div className="w-2 h-2 bg-indigo-600 dark:bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+          <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+          <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+          <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
         </div>
       </div>
     </div>

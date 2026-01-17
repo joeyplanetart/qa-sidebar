@@ -14,6 +14,7 @@ import Loading from './components/Loading/Loading';
 import { useAuth } from './hooks/useAuth';
 import { useContents } from './hooks/useContents';
 import { useDialog } from './hooks/useDialog';
+import { useThemeColor } from './hooks/useThemeColor';
 import { getFromLocalStorage } from './services/storage';
 import { createContent } from './services/supabase';
 import { saveToLocalStorage } from './services/storage';
@@ -42,6 +43,7 @@ function App() {
   const [batchMode, setBatchMode] = useState(false);
   
   const dialog = useDialog();
+  useThemeColor(); // 初始化主题色
   
   const { user, loading: authLoading } = useAuth();
   // 使用本地模式时传入 undefined，使用 Supabase 时传入用户 ID

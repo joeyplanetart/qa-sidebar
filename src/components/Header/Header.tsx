@@ -3,6 +3,7 @@ import type { User } from '../../types';
 import { signOutChromeIdentity } from '../../services/chromeAuth';
 import { getUserAvatar } from '../../utils/avatar';
 import ThemeToggle from '../ThemeToggle/ThemeToggle';
+import ThemeColorToggle from '../ThemeColorToggle/ThemeColorToggle';
 
 interface HeaderProps {
   user: User | null;
@@ -27,13 +28,14 @@ export default function Header({ user, onNewContent, onShowStatistics, onShowLog
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4 transition-colors">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-2xl font-bold text-primary dark:text-indigo-400"></h1>
+          <h1 className="text-2xl font-bold text-primary"></h1>
           {/* <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             {user ? '' : '本地模式'}
           </p> */}
         </div>
         <div className="flex items-center gap-3">
           <ThemeToggle />
+          <ThemeColorToggle />
           <button
             onClick={onShowStatistics}
             className="text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-2 rounded-lg flex items-center gap-2 transition-colors"
@@ -44,7 +46,7 @@ export default function Header({ user, onNewContent, onShowStatistics, onShowLog
           </button>
           <button
             onClick={onNewContent}
-            className="bg-primary hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
           >
             <Plus size={20} />
             <span>新建</span>
@@ -95,7 +97,7 @@ export default function Header({ user, onNewContent, onShowStatistics, onShowLog
         ) : (
           <button
             onClick={onShowLogin}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm text-primary dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 text-sm text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
             title="登录账号"
           >
             <LogIn size={16} />

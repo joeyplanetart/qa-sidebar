@@ -66,7 +66,7 @@ export default function Dialog({
           )}
           <button
             onClick={handleConfirm}
-            className="px-5 py-2.5 text-base font-medium bg-primary dark:bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-500/20"
+            className="px-5 py-2.5 text-base font-medium bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors shadow-lg shadow-primary/20"
           >
             {confirmText}
           </button>

@@ -337,7 +337,7 @@ export default function ContentList({ contents, loading, batchMode, onBatchModeC
       <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
         <FileText size={48} className="mb-4 opacity-50" />
         <p>暂无内容</p>
-        <p className="text-sm mt-1">点击"新建"按钮添加第一个内容</p>
+        <p className="text-sm mt-1">点击"新建"按钮添加内容</p>
       </div>
     );
   }

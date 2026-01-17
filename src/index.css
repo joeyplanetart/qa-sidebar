@@ -7,6 +7,35 @@
     @apply m-0 min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white transition-colors;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   }
+
+  /* 主题色 CSS 变量 */
+  :root[data-theme="indigo"] {
+    --color-primary: 79 70 229; /* indigo-600 */
+    --color-primary-hover: 67 56 202; /* indigo-700 */
+    --color-primary-light: 99 102 241; /* indigo-500 */
+    --color-primary-dark: 55 48 163; /* indigo-800 */
+  }
+
+  :root[data-theme="green"] {
+    --color-primary: 132 204 22; /* lime-600 */
+    --color-primary-hover: 101 163 13; /* lime-700 */
+    --color-primary-light: 163 230 53; /* lime-500 */
+    --color-primary-dark: 77 124 15; /* lime-800 */
+  }
+
+  .dark[data-theme="indigo"] {
+    --color-primary: 129 140 248; /* indigo-400 */
+    --color-primary-hover: 99 102 241; /* indigo-500 */
+    --color-primary-light: 165 180 252; /* indigo-300 */
+    --color-primary-dark: 79 70 229; /* indigo-600 */
+  }
+
+  .dark[data-theme="green"] {
+    --color-primary: 163 230 53; /* lime-400 */
+    --color-primary-hover: 132 204 22; /* lime-500 */
+    --color-primary-light: 190 242 100; /* lime-300 */
+    --color-primary-dark: 101 163 13; /* lime-600 */
+  }
 }
 
 /* 代码高亮样式 */

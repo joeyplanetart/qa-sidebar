@@ -26,7 +26,7 @@ export default function FilterTabs({ active, onChange, batchMode, onBatchModeTog
             onClick={() => onChange(tab.id)}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               active === tab.id
-                ? 'bg-primary dark:bg-indigo-600 text-white'
+                ? 'bg-primary text-white'
                 : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
             }`}
           >
@@ -39,7 +39,7 @@ export default function FilterTabs({ active, onChange, batchMode, onBatchModeTog
       {onBatchModeToggle && !batchMode && (
         <button
           onClick={onBatchModeToggle}
-          className="p-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors border border-indigo-200 dark:border-indigo-800"
+          className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors border border-primary/30"
           title="批量管理"
         >
           <ListChecks size={20} />
