@@ -244,23 +244,29 @@ const ContentItemRow = memo(
           </pre>
         )}
 
-        {/* 标签显示 */}
-        {item.tags && item.tags.length > 0 && (
-          <div className="mt-3 max-h-20 overflow-y-auto flex flex-wrap gap-1 content-start scrollbar-thin">
-            {item.tags.map((tag, idx) => (
-              <span
-                key={idx}
-                className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-200 rounded text-xs flex-shrink-0"
-              >
-                <Tag size={10} />
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
+        {/* 标签和创建时间同行 */}
+        <div className="mt-3 flex items-center justify-between gap-2">
+          {/* 标签显示 */}
+          {item.tags && item.tags.length > 0 ? (
+            <div className="flex-1 max-h-20 overflow-y-auto flex flex-wrap gap-1 content-start scrollbar-thin">
+              {item.tags.map((tag, idx) => (
+                <span
+                  key={idx}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-200 rounded text-xs flex-shrink-0"
+                >
+                  <Tag size={10} />
+                  {tag}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <div className="flex-1"></div>
+          )}
 
-        <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
-          创建于 {new Date(item.createdAt).toLocaleString('zh-CN')}
+          {/* 创建时间 - 靠右对齐 */}
+          <div className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
+            {new Date(item.createdAt).toLocaleString('zh-CN')}
+          </div>
         </div>
       </div>
     );

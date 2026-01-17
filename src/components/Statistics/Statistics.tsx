@@ -69,7 +69,7 @@ export default function Statistics({ contents, filteredContents }: StatisticsPro
       {/* 总体统计 */}
       <div>
         {/* <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-          📊 总体统计
+          总体统计
         </h3> */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">

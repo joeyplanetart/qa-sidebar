@@ -27,22 +27,20 @@ export default function Header({ user, onNewContent, onShowStatistics, onShowLog
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4 transition-colors">
       <div className="flex items-center justify-between mb-4">
-        <div>
-          <h1 className="text-2xl font-bold text-primary"></h1>
-          {/* <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {user ? '' : '本地模式'}
-          </p> */}
-        </div>
         <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-primary"></h1>
+          {/* 主题切换按钮组 - 靠左 */}
           <ThemeToggle />
           <ThemeColorToggle />
+        </div>
+        <div className="flex items-center gap-3">
           <button
             onClick={onShowStatistics}
             className="text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-2 rounded-lg flex items-center gap-2 transition-colors"
-            title="数据统计"
+            title="统计"
           >
             <BarChart3 size={20} />
-            <span className="text-sm">统计</span>
+            {/* <span className="text-sm">统计</span> */}
           </button>
           <button
             onClick={onNewContent}
