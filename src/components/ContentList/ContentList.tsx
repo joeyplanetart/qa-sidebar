@@ -1,4 +1,4 @@
-import { FileText, Code, Database, Edit, Trash2, Copy, Check, Pin, PinOff, Tag, CheckCircle2, Circle } from 'lucide-react';
+import { FileText, Code, Database, Edit, Trash2, Copy, Check, Pin, PinOff, Tag, CheckCircle2, Circle, ChevronDown, ChevronUp } from 'lucide-react';
 import type { ContentItem } from '../../types';
 import { highlight, languages } from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
@@ -81,6 +81,7 @@ const ContentItemRow = memo(
     onToggleSelect: (id: string) => void;
   }) => {
     const Icon = typeIcons[item.type];
+    const [isExpanded, setIsExpanded] = useState(true); // 默认展开
     const previewContent = item.content.slice(0, 200);
     const sanitizedFormattedHtml = item.formattedHtml
       ? sanitizeHtml(item.formattedHtml)
@@ -151,11 +152,27 @@ const ContentItemRow = memo(
             )}
 
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <Icon size={18} className="text-primary dark:text-indigo-400" />
-                <h3 className="font-semibold text-gray-900 dark:text-white">{item.title}</h3>
+              <div 
+                className="flex items-center gap-2 mb-2 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={(e) => {
+                  if (!batchMode) {
+                    e.stopPropagation();
+                    setIsExpanded(!isExpanded);
+                  }
+                }}
+              >
+                <Icon size={18} className="text-primary" />
+                <h3 className="font-semibold text-gray-900 dark:text-white flex-1">{item.title}</h3>
                 {item.isPinned && (
                   <Pin size={14} className="text-yellow-600 fill-yellow-600" />
+                )}
+                {/* 展开/折叠图标 */}
+                {!batchMode && (
+                  isExpanded ? (
+                    <ChevronUp size={18} className="text-gray-400 flex-shrink-0" />
+                  ) : (
+                    <ChevronDown size={18} className="text-gray-400 flex-shrink-0" />
+                  )
                 )}
               </div>
               <div className="flex items-center gap-2 ml-6">
@@ -214,34 +231,39 @@ const ContentItemRow = memo(
           )}
         </div>
 
-        {item.type === 'text' ? (
-          sanitizedFormattedHtml ? (
-            <div
-              className="quick-save-rich-preview text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-3 rounded max-h-32 overflow-hidden"
-              dangerouslySetInnerHTML={{ __html: sanitizedFormattedHtml }}
-            />
-          ) : (
-            <div className="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 p-3 rounded">
-              {previewContent}
-              {item.content.length > 200 && '...'}
-            </div>
-          )
-        ) : (
-          <pre className="text-sm bg-gray-900 dark:bg-gray-950 rounded overflow-x-auto p-3">
-            {highlightedCode ? (
-              <code 
-                className={`language-${language}`}
-                dangerouslySetInnerHTML={{ __html: highlightedCode }}
-              />
+        {/* 内容区域 - 可展开/折叠 */}
+        {isExpanded && (
+          <>
+            {item.type === 'text' ? (
+              sanitizedFormattedHtml ? (
+                <div
+                  className="quick-save-rich-preview text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-3 rounded max-h-32 overflow-hidden"
+                  dangerouslySetInnerHTML={{ __html: sanitizedFormattedHtml }}
+                />
+              ) : (
+                <div className="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 p-3 rounded">
+                  {previewContent}
+                  {item.content.length > 200 && '...'}
+                </div>
+              )
             ) : (
-              <code className={`language-${language}`}>
-                {previewContent}
-              </code>
+              <pre className="text-sm bg-gray-900 dark:bg-gray-950 rounded overflow-x-auto p-3">
+                {highlightedCode ? (
+                  <code 
+                    className={`language-${language}`}
+                    dangerouslySetInnerHTML={{ __html: highlightedCode }}
+                  />
+                ) : (
+                  <code className={`language-${language}`}>
+                    {previewContent}
+                  </code>
+                )}
+                {item.content.length > 200 && (
+                  <span className="text-gray-400">{'\n...'}</span>
+                )}
+              </pre>
             )}
-            {item.content.length > 200 && (
-              <span className="text-gray-400">{'\n...'}</span>
-            )}
-          </pre>
+          </>
         )}
 
         {/* 标签和创建时间同行 */}
