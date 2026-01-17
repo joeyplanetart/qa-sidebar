@@ -1,4 +1,4 @@
-import { signInWithChromeIdentity, signInWithGitHubIdentity } from '../../services/chromeAuth';
+import { signInWithChromeIdentity, signInWithGitHubIdentity, signInWithTwitterIdentity } from '../../services/chromeAuth';
 import { signUpWithEmail, signInWithEmail } from '../../services/supabase';
 import { useState } from 'react';
 
@@ -67,6 +67,37 @@ export default function AuthPanel({ onSkipLogin, showAlert }: AuthPanelProps) {
           errorMessage = '您取消了登录';
         } else if (errorMessage.includes('access token')) {
           errorMessage += '\n\n💡 提示：请检查 GitHub OAuth 和 Supabase 的配置';
+        }
+      }
+      
+      await showAlert(errorMessage, '登录错误');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTwitterSignIn = async () => {
+    setLoading(true);
+    try {
+      console.log('用户点击了 Twitter/X 登录按钮');
+      await signInWithTwitterIdentity();
+      console.log('signInWithTwitterIdentity 执行完成');
+      // 登录成功后，useAuth hook 会自动检测到认证状态变化
+    } catch (error) {
+      console.error('❌ Twitter/X 登录失败:', error);
+      
+      let errorMessage = '登录失败，请重试';
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        
+        // 提供更友好的错误提示
+        if (errorMessage.includes('Supabase')) {
+          errorMessage += '\n\n💡 提示：请确保 Supabase 中已配置 Twitter OAuth';
+        } else if (errorMessage.includes('取消')) {
+          errorMessage = '您取消了登录';
+        } else if (errorMessage.includes('access token')) {
+          errorMessage += '\n\n💡 提示：请检查 Twitter OAuth 和 Supabase 的配置';
         }
       }
       
@@ -251,6 +282,20 @@ export default function AuthPanel({ onSkipLogin, showAlert }: AuthPanelProps) {
           </svg>
           <span className="font-medium text-gray-700 dark:text-gray-300">
             {loading ? '登录中...' : '使用 GitHub 账号登录'}
+          </span>
+        </button>
+
+        {/* Twitter/X 登录按钮 */}
+        <button
+          onClick={handleTwitterSignIn}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-3 px-6 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+          </svg>
+          <span className="font-medium text-gray-700 dark:text-gray-300">
+            {loading ? '登录中...' : '使用 Twitter/X 账号登录'}
           </span>
         </button>
 
