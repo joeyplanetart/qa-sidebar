@@ -10,6 +10,7 @@ import Dialog from './components/Dialog/Dialog';
 import QuickSaveDialog from './components/QuickSave/QuickSaveDialog';
 import QuickInsertDialog from './components/QuickInsert/QuickInsertDialog';
 import StatisticsModal from './components/Statistics/StatisticsModal';
+import Loading from './components/Loading/Loading';
 import { useAuth } from './hooks/useAuth';
 import { useContents } from './hooks/useContents';
 import { useDialog } from './hooks/useDialog';
@@ -326,11 +327,7 @@ function App() {
   };
 
   if (authLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-950 transition-colors">
-        <div className="text-gray-600 dark:text-gray-400">加载中...</div>
-      </div>
-    );
+    return <Loading message="QA Sider" />;
   }
 
   // 显示登录选择页（仅在没有用户、没有本地模式、且应该显示的情况下）
