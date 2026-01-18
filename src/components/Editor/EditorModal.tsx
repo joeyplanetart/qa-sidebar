@@ -323,7 +323,7 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
                 }}
               />
             ) : (
-              <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+              <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden bg-gray-900 dark:bg-gray-950">
                 <Editor
                   value={content}
                   onValueChange={setContent}
@@ -337,7 +337,7 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
                     minHeight: '384px',
                     maxHeight: '384px',
                     overflowY: 'auto',
-                    backgroundColor: resolvedTheme === 'dark' ? '#1e1e1e' : '#2d2d2d',
+                    backgroundColor: 'transparent',
                     color: resolvedTheme === 'dark' ? '#d4d4d4' : '#ccc',
                   }}
                   textareaClassName="focus:outline-none"

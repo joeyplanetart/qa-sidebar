@@ -312,7 +312,7 @@ export default function QuickSaveDialog({
               )
             ) : (
               /* 代码模式 - 带语法高亮的编辑器 */
-              <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+              <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden bg-gray-900 dark:bg-gray-950">
                 <Editor
                   value={content}
                   onValueChange={setContent}
@@ -326,7 +326,7 @@ export default function QuickSaveDialog({
                     minHeight: '192px',
                     maxHeight: '192px',
                     overflowY: 'auto',
-                    backgroundColor: resolvedTheme === 'dark' ? '#1e1e1e' : '#2d2d2d',
+                    backgroundColor: 'transparent',
                     color: resolvedTheme === 'dark' ? '#d4d4d4' : '#ccc',
                   }}
                   textareaClassName="focus:outline-none"
