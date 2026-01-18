@@ -1,4 +1,4 @@
-import { signInWithChromeIdentity, signInWithGitHubIdentity } from '../../services/chromeAuth';
+import { signInWithChromeIdentity, signInWithGitHubIdentity, signInWithSlackIdentity } from '../../services/chromeAuth';
 import { signUpWithEmail, signInWithEmail } from '../../services/supabase';
 import { useState } from 'react';
 
@@ -67,6 +67,37 @@ export default function AuthPanel({ onSkipLogin, showAlert }: AuthPanelProps) {
           errorMessage = '您取消了登录';
         } else if (errorMessage.includes('access token')) {
           errorMessage += '\n\n💡 提示：请检查 GitHub OAuth 和 Supabase 的配置';
+        }
+      }
+      
+      await showAlert(errorMessage, '登录错误');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSlackSignIn = async () => {
+    setLoading(true);
+    try {
+      console.log('用户点击了 Slack 登录按钮');
+      await signInWithSlackIdentity();
+      console.log('signInWithSlackIdentity 执行完成');
+      // 登录成功后，useAuth hook 会自动检测到认证状态变化
+    } catch (error) {
+      console.error('❌ Slack 登录失败:', error);
+      
+      let errorMessage = '登录失败，请重试';
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        
+        // 提供更友好的错误提示
+        if (errorMessage.includes('Supabase')) {
+          errorMessage += '\n\n💡 提示：请确保 Supabase 中已配置 Slack OAuth';
+        } else if (errorMessage.includes('取消')) {
+          errorMessage = '您取消了登录';
+        } else if (errorMessage.includes('access token')) {
+          errorMessage += '\n\n💡 提示：请检查 Slack OAuth 和 Supabase 的配置';
         }
       }
       
@@ -253,6 +284,25 @@ export default function AuthPanel({ onSkipLogin, showAlert }: AuthPanelProps) {
             {loading ? '登录中...' : '使用 GitHub 账号登录'}
           </span>
         </button>
+
+        {/* Slack 登录按钮 - 暂时隐藏，需要先配置 Supabase Slack Provider */}
+        {false && (
+          <button
+            onClick={handleSlackSignIn}
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-3 px-6 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+              <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313z" fill="#E01E5A"/>
+              <path d="M8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312z" fill="#36C5F0"/>
+              <path d="M18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312z" fill="#2EB67D"/>
+              <path d="M15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z" fill="#ECB22E"/>
+            </svg>
+            <span className="font-medium text-gray-700 dark:text-gray-300">
+              {loading ? '登录中...' : '使用 Slack 账号登录'}
+            </span>
+          </button>
+        )}
 
         {/* Google 登录按钮 - 暂时隐藏 */}
         {false && (

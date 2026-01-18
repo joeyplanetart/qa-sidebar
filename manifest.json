@@ -18,7 +18,10 @@
     "https://accounts.google.com/*",
     "https://*.chromiumapp.org/*",
     "https://github.com/*",
-    "https://*.github.com/*"
+    "https://*.github.com/*",
+    "https://slack.com/*",
+    "https://*.slack.com/*",
+    "https://api.slack.com/*"
   ],
   "side_panel": {
     "default_path": "index.html"
