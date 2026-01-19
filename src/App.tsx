@@ -7,8 +7,6 @@ import ContentList from './components/ContentList/ContentList';
 import EditorModal from './components/Editor/EditorModal';
 import AuthPanel from './components/Auth/AuthPanel';
 import Dialog from './components/Dialog/Dialog';
-import QuickSaveDialog from './components/QuickSave/QuickSaveDialog';
-import QuickInsertDialog from './components/QuickInsert/QuickInsertDialog';
 import StatisticsModal from './components/Statistics/StatisticsModal';
 import Loading from './components/Loading/Loading';
 import { useAuth } from './hooks/useAuth';
@@ -16,15 +14,11 @@ import { useContents } from './hooks/useContents';
 import { useDialog } from './hooks/useDialog';
 import { useThemeColor } from './hooks/useThemeColor';
 import { getFromLocalStorage } from './services/storage';
-import { createContent } from './services/supabase';
-import { saveToLocalStorage } from './services/storage';
-import type { ContentType, ContentItem } from './types';
+import type { ContentType } from './types';
 
 // 启动日志 - 帮助确认代码已加载
-console.log('🎯 QA sidePanel 应用已加载');
+console.log('🎯 QA Sider Web 应用已加载');
 console.log('📍 当前位置:', location.href);
-console.log('🔧 Chrome API 可用:', typeof chrome !== 'undefined');
-console.log('🔑 Chrome Identity 可用:', typeof chrome?.identity !== 'undefined');
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -34,11 +28,6 @@ function App() {
   const [editingContent, setEditingContent] = useState<string | null>(null);
   const [useLocalMode, setUseLocalMode] = useState(false);
   const [showAuthPanel, setShowAuthPanel] = useState(false);
-  const [quickSaveContent, setQuickSaveContent] = useState<{
-    content: string;
-    formattedHtml?: string;
-  } | null>(null);
-  const [showInsertDialog, setShowInsertDialog] = useState(false);
   const [showStatistics, setShowStatistics] = useState(false);
   const [batchMode, setBatchMode] = useState(false);
   
@@ -47,7 +36,7 @@ function App() {
   
   const { user, loading: authLoading } = useAuth();
   // 使用本地模式时传入 undefined，使用 Supabase 时传入用户 ID
-  const { contents, loading: contentsLoading, deleteContent, togglePin, refresh, incrementUseCount } = useContents(
+  const { contents, loading: contentsLoading, deleteContent, togglePin, refresh } = useContents(
     useLocalMode ? undefined : user?.uid
   );
 
@@ -92,33 +81,6 @@ function App() {
       initializeMode();
     }
   }, [user, authLoading]);
-
-  // 监听来自 background 的消息
-  useEffect(() => {
-    const handleMessage = (message: {
-      type?: string;
-      data?: { content?: string; formattedHtml?: string; sourceUrl?: string; tabId?: number };
-    }) => {
-      console.log('App received message:', message);
-
-      if (message.type === 'QUICK_SAVE' && message.data?.content) {
-        // 显示快速保存对话框
-        setQuickSaveContent({
-          content: message.data.content,
-          formattedHtml: message.data.formattedHtml,
-        });
-      } else if (message.type === 'SHOW_INSERT_MODE') {
-        // 显示插入片段对话框
-        setShowInsertDialog(true);
-      }
-    };
-
-    chrome.runtime.onMessage.addListener(handleMessage);
-
-    return () => {
-      chrome.runtime.onMessage.removeListener(handleMessage);
-    };
-  }, []);
 
   // 提取所有可用标签
   const availableTags = useMemo(() => {
@@ -255,79 +217,6 @@ function App() {
     setUseLocalMode(false);
   };
 
-  // 处理快速保存
-  const handleQuickSave = async (data: {
-    title: string;
-    content: string;
-    type: ContentType;
-    language?: string;
-    formattedHtml?: string;
-    tags?: string[];
-    variables?: string[];
-  }) => {
-    try {
-      const now = Date.now();
-
-      // 本地模式：保存到本地存储
-      if (useLocalMode) {
-        const localData = await getFromLocalStorage();
-        const newItem: ContentItem = {
-          id: `local_${now}`,
-          userId: 'local',
-          ...data,
-          createdAt: now,
-          updatedAt: now,
-        };
-        await saveToLocalStorage([...localData, newItem]);
-        setQuickSaveContent(null);
-        refresh();
-        await dialog.showAlert('片段已保存到本地！', '成功');
-        return;
-      }
-
-      // 登录模式：检查用户是否已登录
-      if (!user?.uid) {
-        await dialog.showAlert('请先登录后再保存到云端\n\n或者使用"本地模式"保存到浏览器本地', '需要登录');
-        return;
-      }
-
-      // 保存到 Supabase
-      await createContent({
-        userId: user.uid,
-        ...data,
-        createdAt: now,
-        updatedAt: now,
-      });
-
-      setQuickSaveContent(null);
-      refresh();
-      await dialog.showAlert('片段已保存到云端！', '成功');
-    } catch (error) {
-      console.error('快速保存失败:', error);
-      await dialog.showAlert('保存失败，请重试', '错误');
-    }
-  };
-
-  // 处理插入片段
-  const handleInsertSnippet = async (content: string, contentId: string) => {
-    try {
-      const response = await chrome.runtime.sendMessage({
-        action: 'insertToPage',
-        text: content,
-      });
-
-      if (response?.success) {
-        // 增加使用计数
-        await incrementUseCount(contentId);
-        setShowInsertDialog(false);
-        await dialog.showAlert('片段已插入到页面！', '成功');
-      }
-    } catch (error) {
-      console.error('插入失败:', error);
-      await dialog.showAlert('插入失败，请确保页面有可编辑的输入框', '错误');
-    }
-  };
-
   if (authLoading) {
     return <Loading message="QA Sider" />;
   }
@@ -398,24 +287,6 @@ function App() {
           onClose={handleCloseEditor}
           onSave={handleSaveSuccess}
           showAlert={dialog.showAlert}
-        />
-      )}
-
-      {quickSaveContent && (
-        <QuickSaveDialog
-          initialContent={quickSaveContent.content}
-          initialFormattedHtml={quickSaveContent.formattedHtml}
-          onSave={handleQuickSave}
-          onClose={() => setQuickSaveContent(null)}
-          tagSuggestions={availableTags}
-        />
-      )}
-
-      {showInsertDialog && (
-        <QuickInsertDialog
-          contents={contents}
-          onInsert={handleInsertSnippet}
-          onClose={() => setShowInsertDialog(false)}
         />
       )}
 

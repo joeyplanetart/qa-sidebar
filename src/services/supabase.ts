@@ -13,40 +13,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey);
 
 // Auth 服务
-export const signInWithGoogle = async () => {
-  try {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: chrome.identity.getRedirectURL(),
-      },
-    });
-
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    console.error('Google 登录失败:', error);
-    throw error;
-  }
-};
-
-// GitHub 登录
-export const signInWithGitHub = async () => {
-  try {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'github',
-      options: {
-        redirectTo: chrome.identity.getRedirectURL(),
-      },
-    });
-
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    console.error('GitHub 登录失败:', error);
-    throw error;
-  }
-};
 
 // Email 注册
 export const signUpWithEmail = async (email: string, password: string) => {

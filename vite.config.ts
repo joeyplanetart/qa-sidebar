@@ -1,19 +1,27 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { crx } from '@crxjs/vite-plugin'
-import manifest from './manifest.json'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    react(),
-    crx({ manifest: manifest as any }),
-  ],
+  plugins: [react()],
   build: {
+    outDir: 'dist',
+    sourcemap: false,
     rollupOptions: {
-      input: {
-        sidepanel: 'index.html',
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom'],
+          'editor': ['@monaco-editor/react'],
+          'ui-vendor': ['lucide-react', 'react-virtuoso'],
+        },
       },
     },
+  },
+  server: {
+    port: 3000,
+    open: true,
+  },
+  preview: {
+    port: 4173,
   },
 })

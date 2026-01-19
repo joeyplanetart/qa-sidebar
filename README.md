@@ -1,6 +1,6 @@
-# QA sidePanel - Chrome 扩展
+# QA Sider - Web 版本
 
-一个现代化的 Chrome 侧边栏扩展，用于保存和管理代码片段、SQL 语句和文本内容。支持云端同步、本地存储、置顶功能等。
+一个现代化的代码片段管理工具，专为 QA 和开发者打造。支持云端同步、本地存储、标签管理等功能。
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
@@ -8,51 +8,68 @@
 ## ✨ 主要功能
 
 - 📝 **多类型支持** - 保存代码片段、SQL 语句和纯文本
-- ⚡ **快速插入** - 右键菜单/快捷键快速保存和插入片段
 - 🎨 **专业编辑器** - Monaco Editor 集成，提供 IDE 级编辑体验
 - 🔍 **智能搜索** - 实时模糊搜索，快速定位内容
 - 📌 **置顶功能** - 常用内容置顶，快速访问
 - 🏷️ **标签系统** - 多标签支持、智能建议、标签云筛选
 - 📂 **类型筛选** - 按类型分类（代码/SQL/文本）
-- 🔐 **Email 登录** - 简单的邮箱密码认证
+- 🔐 **邮箱登录** - 简单的邮箱密码认证
 - 👤 **随机头像** - 每个用户自动生成独特头像
 - ☁️ **云端同步** - Supabase 后端，数据自动同步
 - 💾 **本地模式** - 支持匿名使用，数据保存在本地
 - 🎯 **语法高亮** - Prism.js 驱动，支持多种语言
 - 📱 **现代化 UI** - TailwindCSS + 响应式设计
+- 🌓 **主题切换** - 支持亮色/暗色主题
 
 ## 🚀 快速开始
 
-### 安装
+### 本地开发
 
 ```bash
 # 克隆仓库
 git clone <your-repo-url>
 cd qa_sider
 
+# 切换到 web 版本分支
+git checkout web_version
+
 # 安装依赖
 npm install
 
 # 配置环境变量
-cp .env.example .env
-# 编辑 .env 文件，填入你的 Supabase 配置
+# 创建 .env.local 文件，填入你的 Supabase 配置
+# VITE_SUPABASE_URL=your_supabase_url
+# VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-# 构建扩展
-npm run build
+# 启动开发服务器
+npm run dev
 ```
 
-### 加载到 Chrome
+### 部署到 Vercel
 
-1. 打开 Chrome，访问 `chrome://extensions/`
-2. 开启右上角的 **开发者模式**
-3. 点击 **加载已解压的扩展程序**
-4. 选择项目的 `dist` 目录
-5. 点击扩展图标打开侧边栏
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/qa_sider&project-name=qa-sider&repository-name=qa_sider)
+
+**手动部署步骤：**
+
+1. Fork 本仓库
+2. 在 [Vercel](https://vercel.com) 创建新项目
+3. 导入你的 GitHub 仓库
+4. 配置环境变量：
+   - `VITE_SUPABASE_URL`: 你的 Supabase 项目 URL
+   - `VITE_SUPABASE_ANON_KEY`: 你的 Supabase 匿名密钥
+5. 点击部署
+
+### Supabase 配置
+
+1. 在 [Supabase](https://supabase.com) 创建新项目
+2. 创建 `contents` 表（参考 `SUPABASE_CONFIG.md`）
+3. 启用 Email/Password 认证
+4. 复制项目 URL 和 anon key 到环境变量
 
 ## 🛠️ 技术栈
 
 - **前端框架**: React 18 + TypeScript
-- **构建工具**: Vite + @crxjs/vite-plugin
+- **构建工具**: Vite
 - **样式**: TailwindCSS
 - **编辑器**: Monaco Editor
 - **语法高亮**: Prism.js
@@ -65,7 +82,7 @@ npm run build
 
 ```
 qa_sider/
-├── src/                      # 源代码
+├── src/
 │   ├── components/          # React 组件
 │   │   ├── Auth/           # 认证相关
 │   │   ├── ContentList/    # 内容列表
@@ -77,9 +94,7 @@ qa_sider/
 │   ├── types/              # TypeScript 类型
 │   └── utils/              # 工具函数
 ├── public/                  # 静态资源
-│   └── icons/              # 扩展图标
 ├── docs/                    # 📚 文档
-├── manifest.json            # Chrome 扩展配置
 └── package.json            # 项目依赖
 ```
 
@@ -104,37 +119,16 @@ qa_sider/
 **筛选内容**：
 1. 主界面显示所有可用标签
 2. 点击标签进行筛选
-3. 可以选择多个标签（OR 逻辑，包含任一标签）
+3. 可以选择多个标签（OR 逻辑）
 4. 点击"清除全部"重置筛选
 
-**标签建议**：
-- 基于历史标签自动建议
-- 实时过滤匹配的标签
-- 避免重复添加
-- 精选 3 个最核心标签
+### 变量功能
 
-### 快速插入功能
+在代码片段中使用 `{{变量名}}` 定义变量，插入时可以替换为实际值：
 
-**快速保存片段**：
-- 在任何网页选中文本
-- 右键菜单选择"保存选中文本为片段"
-- 或使用快捷键 `Alt+Shift+S` (Mac: `Cmd+Shift+D`)
-- 自动检测语言类型，添加标签后保存
-
-**快速插入片段**：
-- 在任何输入框/编辑器中
-- 右键菜单选择"插入片段"
-- 或使用快捷键 `Ctrl+Shift+V` (Mac: `Cmd+Shift+V`)
-- 搜索并选择片段，按 Enter 插入
-
-**支持的快捷键**：
-- `Alt+Shift+S` / `Cmd+Shift+D` - 保存选中文本
-- `Ctrl+Shift+V` / `Cmd+Shift+V` - 插入片段
-
-> 💡 提示：如果快捷键冲突，可以在 `chrome://extensions/shortcuts` 中自定义。详见 [快捷键配置指南](KEYBOARD_SHORTCUTS.md)
-
-详细说明请查看 [快速插入功能文档](QUICK_INSERT_FEATURE.md)
-
+```sql
+SELECT * FROM users WHERE id = {{user_id}} AND status = {{status}}
+```
 
 ## 🔧 开发
 
@@ -145,6 +139,9 @@ npm run dev
 # 构建生产版本
 npm run build
 
+# 预览生产构建
+npm run preview
+
 # 代码检查
 npm run lint
 
@@ -152,7 +149,31 @@ npm run lint
 tsc --noEmit
 ```
 
+## 📝 环境变量
 
+创建 `.env.local` 文件：
+
+```bash
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+## 🌟 特性对比
+
+| 特性 | Chrome 插件版 | Web 版本 |
+|------|-------------|---------|
+| 代码片段管理 | ✅ | ✅ |
+| 云端同步 | ✅ | ✅ |
+| 本地存储 | ✅ | ✅ |
+| 标签系统 | ✅ | ✅ |
+| 语法高亮 | ✅ | ✅ |
+| 主题切换 | ✅ | ✅ |
+| 跨页面快速保存 | ✅ | ❌ |
+| 文本快速插入 | ✅ | ❌ |
+| 右键菜单 | ✅ | ❌ |
+| 全局快捷键 | ✅ | ❌ |
+
+> 💡 **提示**: 如果需要跨页面操作功能（快速保存选中文本、插入片段等），请使用 Chrome 插件版本（`main` 分支）
 
 ## 🤝 贡献
 
@@ -168,7 +189,8 @@ MIT License
 - [Prism.js](https://prismjs.com/) - 语法高亮
 - [Lucide](https://lucide.dev/) - 图标库
 - [TailwindCSS](https://tailwindcss.com/) - CSS 框架
+- [Supabase](https://supabase.com/) - 后端服务
 
 ---
 
-Made with ❤️ for developers who love to organize their snippets.
+Made with ❤️ for developers who love to organize their code snippets.

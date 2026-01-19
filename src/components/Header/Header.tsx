@@ -1,6 +1,6 @@
 import { Plus, LogOut, LogIn, BarChart3 } from 'lucide-react';
 import type { User } from '../../types';
-import { signOutChromeIdentity } from '../../services/chromeAuth';
+import { signOutUser } from '../../services/supabase';
 import { getUserAvatar } from '../../utils/avatar';
 import ThemeToggle from '../ThemeToggle/ThemeToggle';
 import ThemeColorToggle from '../ThemeColorToggle/ThemeColorToggle';
@@ -15,7 +15,7 @@ interface HeaderProps {
 export default function Header({ user, onNewContent, onShowStatistics, onShowLogin }: HeaderProps) {
   const handleSignOut = async () => {
     try {
-      await signOutChromeIdentity();
+      await signOutUser();
       // 清除本地模式标记，下次打开时可以重新选择
       localStorage.removeItem('qa_sider_use_local_mode');
       window.location.reload();
