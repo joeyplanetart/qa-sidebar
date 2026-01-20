@@ -1,4 +1,4 @@
-import { FileText, Code, Database, Edit, Trash2, Copy, Check, Pin, PinOff, Tag, CheckCircle2, Circle, ChevronDown, ChevronUp } from 'lucide-react';
+import { FileText, Code, Database, Edit, Trash2, Copy, Check, Pin, PinOff, Tag, CheckCircle2, Circle } from 'lucide-react';
 import type { ContentItem } from '../../types';
 import { highlight, languages } from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
@@ -82,6 +82,7 @@ const ContentItemRow = memo(
   }) => {
     const Icon = typeIcons[item.type];
     const [isExpanded, setIsExpanded] = useState(true); // 默认展开
+    const [isHovered, setIsHovered] = useState(false); // 悬停状态
     const previewContent = item.content.slice(0, 200);
     const sanitizedFormattedHtml = item.formattedHtml
       ? sanitizeHtml(item.formattedHtml)
@@ -131,6 +132,8 @@ const ContentItemRow = memo(
               : 'border-gray-200 dark:border-gray-700'
         } hover:shadow-md transition-all ${batchMode ? 'cursor-pointer' : ''}`}
         onClick={batchMode ? () => onToggleSelect(item.id) : undefined}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1 flex items-start gap-3">
@@ -166,14 +169,6 @@ const ContentItemRow = memo(
                 {item.isPinned && (
                   <Pin size={14} className="text-yellow-600 fill-yellow-600" />
                 )}
-                {/* 展开/折叠图标 */}
-                {!batchMode && (
-                  isExpanded ? (
-                    <ChevronUp size={18} className="text-gray-400 flex-shrink-0" />
-                  ) : (
-                    <ChevronDown size={18} className="text-gray-400 flex-shrink-0" />
-                  )
-                )}
               </div>
               <div className="flex items-center gap-2 ml-6">
                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200">
@@ -191,20 +186,41 @@ const ContentItemRow = memo(
           {/* 非批量模式：显示操作按钮 */}
           {!batchMode && (
             <div className="flex items-center gap-1">
-              <button
-                onClick={() => onTogglePin(item.id)}
-                className={`p-1.5 rounded transition-colors ${
-                  item.isPinned
-                    ? 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-900'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900'
-                }`}
-                title={item.isPinned ? '取消置顶' : '置顶'}
-              >
-                {item.isPinned ? <Pin size={16} className="fill-yellow-600" /> : <PinOff size={16} />}
-              </button>
+              {/* 悬停时显示其他操作按钮 - 从左边展开 */}
+              <div className={`flex items-center gap-1 transition-all duration-200 ${
+                isHovered ? 'opacity-100 w-auto' : 'opacity-0 w-0 overflow-hidden'
+              }`}>
+                <button
+                  onClick={() => onTogglePin(item.id)}
+                  className={`p-1.5 rounded transition-colors flex-shrink-0 ${
+                    item.isPinned
+                      ? 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-900'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900'
+                  }`}
+                  title={item.isPinned ? '取消置顶' : '置顶'}
+                >
+                  {item.isPinned ? <Pin size={16} className="fill-yellow-600" /> : <PinOff size={16} />}
+                </button>
+                <button
+                  onClick={() => onEdit(item.id)}
+                  className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors flex-shrink-0"
+                  title="编辑"
+                >
+                  <Edit size={16} />
+                </button>
+                <button
+                  onClick={() => onDelete(item.id)}
+                  className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900 rounded transition-colors flex-shrink-0"
+                  title="删除"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+              
+              {/* 复制按钮固定在最右侧 */}
               <button
                 onClick={() => onCopy(item)}
-                className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900 rounded transition-colors"
+                className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900 rounded transition-colors flex-shrink-0"
                 title="复制内容"
               >
                 {copiedId === item.id ? (
@@ -212,20 +228,6 @@ const ContentItemRow = memo(
                 ) : (
                   <Copy size={16} />
                 )}
-              </button>
-              <button
-                onClick={() => onEdit(item.id)}
-                className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                title="编辑"
-              >
-                <Edit size={16} />
-              </button>
-              <button
-                onClick={() => onDelete(item.id)}
-                className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900 rounded transition-colors"
-                title="删除"
-              >
-                <Trash2 size={16} />
               </button>
             </div>
           )}
