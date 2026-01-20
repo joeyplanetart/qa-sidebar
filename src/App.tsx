@@ -9,13 +9,15 @@ import AuthPanel from './components/Auth/AuthPanel';
 import Dialog from './components/Dialog/Dialog';
 import StatisticsModal from './components/Statistics/StatisticsModal';
 import HelpDocModal from './components/HelpDoc/HelpDocModal';
+import ImportExportModal from './components/ImportExport/ImportExportModal';
 import Loading from './components/Loading/Loading';
 import { useAuth } from './hooks/useAuth';
 import { useContents } from './hooks/useContents';
 import { useDialog } from './hooks/useDialog';
 import { useThemeColor } from './hooks/useThemeColor';
-import { getFromLocalStorage } from './services/storage';
-import type { ContentType } from './types';
+import { getFromLocalStorage, saveToLocalStorage } from './services/storage';
+import { createContent } from './services/supabase';
+import type { ContentType, ContentItem } from './types';
 
 // 启动日志 - 帮助确认代码已加载
 console.log('🎯 QA Sider Web 应用已加载');
@@ -31,6 +33,7 @@ function App() {
   const [showAuthPanel, setShowAuthPanel] = useState(false);
   const [showStatistics, setShowStatistics] = useState(false);
   const [showHelpDoc, setShowHelpDoc] = useState(false);
+  const [showImportExport, setShowImportExport] = useState(false);
   const [batchMode, setBatchMode] = useState(false);
   
   const dialog = useDialog();
@@ -219,6 +222,36 @@ function App() {
     setUseLocalMode(false);
   };
 
+  // 处理导入数据
+  const handleImport = async (importedContents: ContentItem[]) => {
+    try {
+      if (useLocalMode) {
+        // 本地模式：合并到本地存储
+        const localData = await getFromLocalStorage();
+        const mergedData = [...localData, ...importedContents];
+        await saveToLocalStorage(mergedData);
+      } else {
+        // 云端模式：批量保存到 Supabase
+        if (!user?.uid) {
+          throw new Error('用户未登录');
+        }
+
+        for (const item of importedContents) {
+          await createContent({
+            ...item,
+            userId: user.uid,
+          });
+        }
+      }
+
+      // 刷新列表
+      refresh();
+    } catch (error) {
+      console.error('导入失败:', error);
+      throw error;
+    }
+  };
+
   if (authLoading) {
     return <Loading message="QA Sider" />;
   }
@@ -248,6 +281,7 @@ function App() {
         onShowStatistics={() => setShowStatistics(true)}
         onShowLogin={handleShowLogin}
         onShowHelp={() => setShowHelpDoc(true)}
+        onShowImportExport={() => setShowImportExport(true)}
       />
       
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -304,6 +338,15 @@ function App() {
       {showHelpDoc && (
         <HelpDocModal
           onClose={() => setShowHelpDoc(false)}
+        />
+      )}
+
+      {showImportExport && (
+        <ImportExportModal
+          contents={contents}
+          onClose={() => setShowImportExport(false)}
+          onImport={handleImport}
+          showAlert={dialog.showAlert}
         />
       )}
 

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Plus, LogOut, LogIn, BarChart3, HelpCircle } from 'lucide-react';
+import { Plus, LogOut, LogIn, BarChart3, HelpCircle, Database } from 'lucide-react';
 import type { User } from '../../types';
 import { signOutUser } from '../../services/supabase';
 import { getUserAvatar } from '../../utils/avatar';
@@ -12,9 +12,10 @@ interface HeaderProps {
   onShowStatistics?: () => void;
   onShowLogin?: () => void;
   onShowHelp?: () => void;
+  onShowImportExport?: () => void;
 }
 
-export default function Header({ user, onNewContent, onShowStatistics, onShowLogin, onShowHelp }: HeaderProps) {
+export default function Header({ user, onNewContent, onShowStatistics, onShowLogin, onShowHelp, onShowImportExport }: HeaderProps) {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -102,6 +103,16 @@ export default function Header({ user, onNewContent, onShowStatistics, onShowLog
               {/* 下拉菜单 */}
               {showMenu && (
                 <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
+                      onShowImportExport?.();
+                    }}
+                    className="w-full px-4 py-2 text-left flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <Database size={16} />
+                    <span>导入/导出</span>
+                  </button>
                   <button
                     onClick={() => {
                       setShowMenu(false);
