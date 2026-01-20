@@ -10,6 +10,7 @@ import Dialog from './components/Dialog/Dialog';
 import QuickSaveDialog from './components/QuickSave/QuickSaveDialog';
 import QuickInsertDialog from './components/QuickInsert/QuickInsertDialog';
 import StatisticsModal from './components/Statistics/StatisticsModal';
+import HelpDocModal from './components/HelpDoc/HelpDocModal';
 import Loading from './components/Loading/Loading';
 import { useAuth } from './hooks/useAuth';
 import { useContents } from './hooks/useContents';
@@ -40,6 +41,7 @@ function App() {
   } | null>(null);
   const [showInsertDialog, setShowInsertDialog] = useState(false);
   const [showStatistics, setShowStatistics] = useState(false);
+  const [showHelpDoc, setShowHelpDoc] = useState(false);
   const [batchMode, setBatchMode] = useState(false);
   
   const dialog = useDialog();
@@ -356,6 +358,7 @@ function App() {
         onNewContent={handleNewContent} 
         onShowStatistics={() => setShowStatistics(true)}
         onShowLogin={handleShowLogin}
+        onShowHelp={() => setShowHelpDoc(true)}
       />
       
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -424,6 +427,12 @@ function App() {
           contents={contents}
           filteredContents={filteredContents}
           onClose={() => setShowStatistics(false)}
+        />
+      )}
+
+      {showHelpDoc && (
+        <HelpDocModal
+          onClose={() => setShowHelpDoc(false)}
         />
       )}
 
