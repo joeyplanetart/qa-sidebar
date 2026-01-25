@@ -312,7 +312,7 @@ export default function QuickSaveDialog({
               )
             ) : (
               /* 代码模式 - 带语法高亮的编辑器 */
-              <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden bg-gray-900 dark:bg-gray-950">
+              <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-auto bg-gray-900 dark:bg-gray-950" style={{ height: '192px' }}>
                 <Editor
                   value={content}
                   onValueChange={setContent}
@@ -323,9 +323,7 @@ export default function QuickSaveDialog({
                     fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
                     fontSize: 13,
                     lineHeight: 1.5,
-                    minHeight: '192px',
-                    maxHeight: '192px',
-                    overflowY: 'auto',
+                    minHeight: '100%',
                     backgroundColor: 'transparent',
                     color: resolvedTheme === 'dark' ? '#d4d4d4' : '#ccc',
                   }}

@@ -323,7 +323,7 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
                 }}
               />
             ) : (
-              <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden bg-gray-900 dark:bg-gray-950">
+              <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-auto bg-gray-900 dark:bg-gray-950" style={{ height: '384px' }}>
                 <Editor
                   value={content}
                   onValueChange={setContent}
@@ -334,9 +334,7 @@ export default function EditorModal({ contentId, userId, onClose, onSave, showAl
                     fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
                     fontSize: 14,
                     lineHeight: 1.6,
-                    minHeight: '384px',
-                    maxHeight: '384px',
-                    overflowY: 'auto',
+                    minHeight: '100%',
                     backgroundColor: 'transparent',
                     color: resolvedTheme === 'dark' ? '#d4d4d4' : '#ccc',
                   }}
