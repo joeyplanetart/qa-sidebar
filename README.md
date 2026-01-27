@@ -1,25 +1,36 @@
 # QA Sider - Web 版本
 
-一个现代化的代码片段管理工具，专为 QA 和开发者打造。支持云端同步、本地存储、标签管理等功能。
+一个现代化的代码片段管理工具，专为 QA 和开发者打造。支持云端同步、本地存储、标签管理、导入导出等功能。
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 ## ✨ 主要功能
 
+### 核心功能
 - 📝 **多类型支持** - 保存代码片段、SQL 语句和纯文本
 - 🎨 **专业编辑器** - Monaco Editor 集成，提供 IDE 级编辑体验
-- 🔍 **智能搜索** - 实时模糊搜索，快速定位内容
+- 🔍 **智能搜索** - Fuse.js 驱动的模糊搜索，快速定位内容
 - 📌 **置顶功能** - 常用内容置顶，快速访问
 - 🏷️ **标签系统** - 多标签支持、智能建议、标签云筛选
 - 📂 **类型筛选** - 按类型分类（代码/SQL/文本）
-- 🔐 **邮箱登录** - 简单的邮箱密码认证
-- 👤 **随机头像** - 每个用户自动生成独特头像
+- 🎯 **语法高亮** - Prism.js 驱动，支持多种编程语言
+
+### 数据管理
 - ☁️ **云端同步** - Supabase 后端，数据自动同步
 - 💾 **本地模式** - 支持匿名使用，数据保存在本地
-- 🎯 **语法高亮** - Prism.js 驱动，支持多种语言
+- 📤 **导入导出** - 支持 JSON/CSV 格式，方便备份和迁移
+- 🗑️ **批量操作** - 支持批量选择和批量删除
+
+### 高级特性
+- 🔐 **邮箱登录** - 简单的邮箱密码认证
+- 👤 **随机头像** - 每个用户自动生成独特头像
+- 📊 **使用统计** - 追踪片段使用次数和最后使用时间
+- 🔄 **变量替换** - 支持 `{{变量名}}` 占位符，插入时动态替换
 - 📱 **现代化 UI** - TailwindCSS + 响应式设计
 - 🌓 **主题切换** - 支持亮色/暗色主题
+- 🎨 **主题色自定义** - 多种主题色可选
+- 📚 **帮助文档** - 内置帮助说明
 
 ## 🚀 快速开始
 
@@ -37,9 +48,8 @@ git checkout web_version
 npm install
 
 # 配置环境变量
-# 创建 .env.local 文件，填入你的 Supabase 配置
-# VITE_SUPABASE_URL=your_supabase_url
-# VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+cp env.example .env.local
+# 编辑 .env.local，填入你的 Supabase 配置
 
 # 启动开发服务器
 npm run dev
@@ -53,7 +63,7 @@ npm run dev
 
 1. Fork 本仓库
 2. 在 [Vercel](https://vercel.com) 创建新项目
-3. 导入你的 GitHub 仓库
+3. 导入你的 GitHub 仓库，选择 `web_version` 分支
 4. 配置环境变量：
    - `VITE_SUPABASE_URL`: 你的 Supabase 项目 URL
    - `VITE_SUPABASE_ANON_KEY`: 你的 Supabase 匿名密钥
@@ -62,21 +72,70 @@ npm run dev
 ### Supabase 配置
 
 1. 在 [Supabase](https://supabase.com) 创建新项目
-2. 创建 `contents` 表（参考 `SUPABASE_CONFIG.md`）
-3. 启用 Email/Password 认证
-4. 复制项目 URL 和 anon key 到环境变量
+
+2. 在 SQL 编辑器中执行以下语句创建表：
+
+```sql
+-- 创建 contents 表
+CREATE TABLE contents (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  "userId" text NOT NULL,
+  type text NOT NULL,
+  title text NOT NULL,
+  content text NOT NULL,
+  language text,
+  tags text[],
+  "isPinned" boolean DEFAULT false,
+  "useCount" integer DEFAULT 0,
+  "lastUsedAt" bigint,
+  "createdAt" bigint NOT NULL,
+  "updatedAt" bigint NOT NULL
+);
+
+-- 创建索引
+CREATE INDEX idx_contents_userId ON contents("userId");
+CREATE INDEX idx_contents_isPinned ON contents("isPinned", "createdAt" DESC);
+
+-- 启用 RLS
+ALTER TABLE contents ENABLE ROW LEVEL SECURITY;
+
+-- 创建安全策略
+CREATE POLICY "Users can read own contents"
+ON contents FOR SELECT
+USING (auth.uid()::text = "userId");
+
+CREATE POLICY "Users can create own contents"
+ON contents FOR INSERT
+WITH CHECK (auth.uid()::text = "userId");
+
+CREATE POLICY "Users can update own contents"
+ON contents FOR UPDATE
+USING (auth.uid()::text = "userId");
+
+CREATE POLICY "Users can delete own contents"
+ON contents FOR DELETE
+USING (auth.uid()::text = "userId");
+```
+
+3. 在 Authentication → Settings 中启用 Email/Password 认证
+4. （可选）关闭 "Enable email confirmations" 以简化注册流程
+5. 复制项目 URL 和 anon key 到环境变量
 
 ## 🛠️ 技术栈
 
-- **前端框架**: React 18 + TypeScript
-- **构建工具**: Vite
-- **样式**: TailwindCSS
-- **编辑器**: Monaco Editor
-- **语法高亮**: Prism.js
-- **后端**: Supabase (Auth + PostgreSQL)
-- **状态管理**: Zustand
-- **图标**: Lucide React
-- **虚拟列表**: React Virtuoso
+| 类别 | 技术 |
+|------|------|
+| **前端框架** | React 18 + TypeScript |
+| **构建工具** | Vite 7 |
+| **样式** | TailwindCSS 3 |
+| **代码编辑器** | Monaco Editor |
+| **语法高亮** | Prism.js |
+| **模糊搜索** | Fuse.js |
+| **后端服务** | Supabase (Auth + PostgreSQL) |
+| **状态管理** | Zustand |
+| **图标库** | Lucide React |
+| **虚拟列表** | React Virtuoso |
+| **安全净化** | DOMPurify |
 
 ## 📦 项目结构
 
@@ -84,18 +143,32 @@ npm run dev
 qa_sider/
 ├── src/
 │   ├── components/          # React 组件
-│   │   ├── Auth/           # 认证相关
-│   │   ├── ContentList/    # 内容列表
-│   │   ├── Editor/         # 编辑器
-│   │   ├── Header/         # 头部
-│   │   └── ...
+│   │   ├── Auth/           # 认证相关 (AuthPanel)
+│   │   ├── ContentList/    # 内容列表 (ContentList, BatchActionsBar)
+│   │   ├── Dialog/         # 对话框组件
+│   │   ├── Editor/         # 编辑器 (EditorModal)
+│   │   ├── FilterTabs/     # 类型筛选
+│   │   ├── Header/         # 头部导航
+│   │   ├── HelpDoc/        # 帮助文档
+│   │   ├── ImportExport/   # 导入导出功能
+│   │   ├── Loading/        # 加载状态
+│   │   ├── SearchBar/      # 搜索栏
+│   │   ├── Statistics/     # 使用统计
+│   │   ├── TagFilter/      # 标签筛选
+│   │   ├── TagInput/       # 标签输入
+│   │   ├── ThemeColorToggle/ # 主题色切换
+│   │   ├── ThemeToggle/    # 亮暗主题切换
+│   │   └── VariableForm/   # 变量表单
+│   ├── contexts/           # React Context
 │   ├── hooks/              # 自定义 Hooks
 │   ├── services/           # 服务层 (Supabase, Storage)
-│   ├── types/              # TypeScript 类型
-│   └── utils/              # 工具函数
-├── public/                  # 静态资源
-├── docs/                    # 📚 文档
-└── package.json            # 项目依赖
+│   ├── types/              # TypeScript 类型定义
+│   ├── utils/              # 工具函数
+│   └── constants/          # 常量配置
+├── public/                 # 静态资源
+├── docs/                   # 📚 文档
+├── vercel.json            # Vercel 部署配置
+└── package.json           # 项目依赖
 ```
 
 ## 🎯 使用说明
@@ -129,6 +202,19 @@ qa_sider/
 ```sql
 SELECT * FROM users WHERE id = {{user_id}} AND status = {{status}}
 ```
+
+### 导入导出
+
+1. 点击头部的导入导出按钮
+2. **导出**：选择 JSON（完整备份）或 CSV（Excel 兼容）格式
+3. **导入**：选择 JSON 或 CSV 文件，数据会与现有数据合并
+
+### 批量操作
+
+1. 长按或右键点击内容项进入批量模式
+2. 选择要操作的内容
+3. 点击全选或逐个选择
+4. 执行批量删除操作
 
 ## 🔧 开发
 
@@ -168,6 +254,11 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 | 标签系统 | ✅ | ✅ |
 | 语法高亮 | ✅ | ✅ |
 | 主题切换 | ✅ | ✅ |
+| 主题色自定义 | ✅ | ✅ |
+| 导入导出 | ✅ | ✅ |
+| 批量操作 | ✅ | ✅ |
+| 使用统计 | ✅ | ✅ |
+| 变量替换 | ✅ | ✅ |
 | 跨页面快速保存 | ✅ | ❌ |
 | 文本快速插入 | ✅ | ❌ |
 | 右键菜单 | ✅ | ❌ |
@@ -187,9 +278,11 @@ MIT License
 
 - [Monaco Editor](https://microsoft.github.io/monaco-editor/) - 代码编辑器
 - [Prism.js](https://prismjs.com/) - 语法高亮
+- [Fuse.js](https://fusejs.io/) - 模糊搜索
 - [Lucide](https://lucide.dev/) - 图标库
 - [TailwindCSS](https://tailwindcss.com/) - CSS 框架
 - [Supabase](https://supabase.com/) - 后端服务
+- [React Virtuoso](https://virtuoso.dev/) - 虚拟列表
 
 ---
 
